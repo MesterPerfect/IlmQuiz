@@ -36,6 +36,13 @@ def main():
     
     # 4. Initialize and show the Main Window
     window = MainWindow(view_model)
+
+    # Load and apply dark theme
+    try:
+        with open("assets/styles/dark_theme.qss", "r", encoding="utf-8") as f:
+            app.setStyleSheet(f.read())
+    except Exception as e:
+        logging.error(f"Failed to load theme: {e}")
     window.show()
     
     # 5. Announce startup for accessibility

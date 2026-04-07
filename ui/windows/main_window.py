@@ -1,10 +1,9 @@
-from PySide6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMainWindow, QStackedWidget
+from .categories_screen import CategoriesScreen
 
 class MainWindow(QMainWindow):
-    """
-    Main application window. Currently a simple placeholder to test the integration.
-    """
+    """Main application window using QStackedWidget to manage screens."""
+    
     def __init__(self, view_model):
         super().__init__()
         self.view_model = view_model
@@ -12,24 +11,23 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("IlmQuiz - Islamic Knowledge Challenge")
         self.resize(800, 600)
         
-        # Setup central widget and layout
-        central_widget = QWidget()
-        layout = QVBoxLayout(central_widget)
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
         
-        # Create UI elements
-        self.title_label = QLabel("IlmQuiz Engine Running Successfully!")
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        self.test_button = QPushButton("Test Audio and TTS")
-        self.test_button.clicked.connect(self._on_test_clicked)
-        
-        # Add elements to layout
-        layout.addWidget(self.title_label)
-        layout.addWidget(self.test_button)
-        
-        self.setCentralWidget(central_widget)
+        self._init_screens()
 
-    def _on_test_clicked(self):
-        """Test function to verify TTS and Audio services are working."""
-        self.view_model.audio.play_sound("correct")
-        self.view_model.read_text("Test successful. The engine is ready.", interrupt=True)
+    def _init_screens(self):
+        # Initialize Categories Screen
+        self.categories_screen = CategoriesScreen(self.view_model)
+        self.categories_screen.category_selected.connect(self._on_category_selected)
+        
+        # Add screens to stacked widget
+        self.stacked_widget.addWidget(self.categories_screen)
+        
+        # Set initial screen
+        self.stacked_widget.setCurrentWidget(self.categories_screen)
+
+    def _on_category_selected(self, category_id: int):
+        # TODO: Switch to Topics screen and pass the category_id
+        self.view_model.read_text(f"Category {category_id} selected.", interrupt=True)
+        print(f"Transitioning to topics for category {category_id}")
