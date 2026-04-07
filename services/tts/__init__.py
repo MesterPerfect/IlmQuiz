@@ -19,18 +19,16 @@ def create_tts(disable_tts: bool = False):
             tts = WindowsTTS()
             if getattr(tts, 'available', True):
                 return tts
-            logger.warning("UniversalSpeech unavailable, falling back to Dummy TTS.")
+            logger.warning("UniversalSpeech unavailable, falling back to Dummy.")
             return DummyTTS()
 
         elif system == "Linux":
-            # TODO: Implement LinuxTTS
-            logger.warning("Linux TTS not yet implemented, falling back to Dummy TTS.")
-            return DummyTTS()
+            from .linux import LinuxTTS
+            return LinuxTTS()
 
         elif system == "Darwin":
-            # TODO: Implement MacOSTTS
-            logger.warning("macOS TTS not yet implemented, falling back to Dummy TTS.")
-            return DummyTTS()
+            from .macos import MacOSTTS
+            return MacOSTTS()
 
         else:
             logger.warning(f"Unsupported platform: {system}")
