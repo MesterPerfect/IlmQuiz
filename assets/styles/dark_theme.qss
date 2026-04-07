@@ -39,3 +39,47 @@ QLabel {
     font-weight: bold;
     color: #4CAF50;
 }
+
+/* Screen Title */
+#screen_title {
+    font-size: 32px;
+    color: #4CAF50;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+/* Category Card Styling */
+#category_card {
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 15px;
+    padding: 15px;
+}
+
+#category_card:hover {
+    border: 1px solid #4CAF50;
+    background-color: #252525;
+}
+
+/* Category Button inside Card */
+#category_button {
+    background-color: #4CAF50;
+    color: #000000;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#category_button:hover {
+    background-color: #66BB6A;
+}
+
+/* Description Text */
+#category_description {
+    color: #B0B0B0;
+    font-size: 15px;
+    line-height: 1.4;
+    padding: 5px;
+}

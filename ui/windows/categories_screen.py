@@ -1,8 +1,8 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QPushButton, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QPushButton, QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
 
 class CategoriesScreen(QWidget):
-    """Screen displaying the main quiz categories."""
+    """Screen displaying the main quiz categories with their descriptions."""
     
     category_selected = Signal(int)
 
@@ -12,29 +12,52 @@ class CategoriesScreen(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
+        # Main layout with some padding
         layout = QVBoxLayout(self)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(20)
 
-        title_label = QLabel("Choose a Category")
+        # Main Title
+        title_label = QLabel("اختر تصنيفاً لنبدأ التحدي")
+        title_label.setObjectName("screen_title") # For specialized CSS
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_label.setStyleSheet("font-size: 28px; margin-bottom: 20px;")
         layout.addWidget(title_label)
 
+        # Grid for categories
         grid_layout = QGridLayout()
-        grid_layout.setSpacing(15)
+        grid_layout.setSpacing(25)
         
         categories = self.view_model.get_categories()
         
         row, col = 0, 0
         for category in categories:
+            # Create a 'Card' for each category
+            card = QFrame()
+            card.setObjectName("category_card")
+            card_layout = QVBoxLayout(card)
+            card_layout.setSpacing(10)
+
+            # Category Name Button
             btn = QPushButton(category.arabic_name)
-            # Use a lambda to pass the category ID when clicked
+            btn.setObjectName("category_button")
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.clicked.connect(lambda checked=False, cid=category.id: self._on_category_clicked(cid))
             
-            grid_layout.addWidget(btn, row, col)
+            # Description Label
+            desc_label = QLabel(category.description)
+            desc_label.setObjectName("category_description")
+            desc_label.setWordWrap(True)
+            desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            
+            # Add to card layout
+            card_layout.addWidget(btn)
+            card_layout.addWidget(desc_label)
+            
+            # Add card to the main grid
+            grid_layout.addWidget(card, row, col)
             
             col += 1
-            if col > 1:
+            if col > 1: # 2 columns layout
                 col = 0
                 row += 1
 
