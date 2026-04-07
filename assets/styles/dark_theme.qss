@@ -1,0 +1,41 @@
+/* Base Application Style */
+QWidget {
+    background-color: #121212;
+    color: #E0E0E0;
+    font-family: "Cairo", "Tajawal", "Segoe UI", sans-serif;
+    font-size: 16px;
+}
+
+/* Accessible Button Style */
+QPushButton {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    border: 2px solid #333333;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+QPushButton:hover {
+    background-color: #2D2D2D;
+    border: 2px solid #4CAF50;
+}
+
+QPushButton:focus {
+    background-color: #2D2D2D;
+    border: 2px solid #2196F3;
+    outline: none;
+}
+
+QPushButton:pressed {
+    background-color: #4CAF50;
+    color: #000000;
+}
+
+/* Labels */
+QLabel {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4CAF50;
+}
