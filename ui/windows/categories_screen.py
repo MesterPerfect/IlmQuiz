@@ -61,6 +61,8 @@ class CategoriesScreen(QWidget):
             btn = QPushButton(category.arabic_name)
             btn.setObjectName("category_button")
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            # Link the description to the button for screen readers
+            btn.setAccessibleDescription(category.description)
             btn.clicked.connect(lambda checked=False, cid=category.id: self._on_category_clicked(cid))
             
             # Description
