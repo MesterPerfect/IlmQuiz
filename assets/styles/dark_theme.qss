@@ -48,21 +48,29 @@ QLabel {
     font-weight: bold;
 }
 
+/* Category icon Styling */
+#category_icon {
+    margin-bottom: 10px;
+    background: transparent;
+}
+
 /* Category Card Styling */
 #category_card {
     background-color: #1E1E1E;
-    border: 1px solid #333333;
-    border-radius: 15px;
-    padding: 15px;
+    border: 2px solid #333333; /* Slightly thicker border */
+    border-radius: 20px;
+    padding: 20px;
+    min-width: 250px;
 }
 
 #category_card:hover {
-    border: 1px solid #4CAF50;
+    border: 2px solid #4CAF50;
     background-color: #252525;
 }
 
 /* Category Button inside Card */
 #category_button {
+    margin-top: 5px;
     background-color: #4CAF50;
     color: #000000;
     border: none;
