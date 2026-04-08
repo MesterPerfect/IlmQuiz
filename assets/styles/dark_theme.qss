@@ -299,3 +299,59 @@ QSlider::handle:horizontal {
     margin: -5px 0;
     border-radius: 10px;
 }
+
+/* Result Screen */
+#result_title {
+    font-size: 36px;
+    font-weight: bold;
+}
+
+#stats_frame {
+    background-color: #1E1E1E;
+    border: 2px solid #333333;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+#stat_label {
+    font-size: 22px;
+    color: #E0E0E0;
+    background-color: #252525;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#action_button {
+    background-color: #2196F3;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+}
+
+#action_button:hover {
+    background-color: #64B5F6;
+}
+
+/* Review Screen */
+#mistake_card {
+    background-color: #2A1B1B; /* Subtle dark red tint */
+    border: 1px solid #F44336;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#review_question {
+    font-size: 22px;
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#review_answer {
+    font-size: 20px;
+    color: #4CAF50; /* Green for correct answer */
+    font-weight: bold;
+}

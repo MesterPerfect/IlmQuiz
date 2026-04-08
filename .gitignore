@@ -150,6 +150,7 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+user_data.json
 .json
 
 # Pyre type checker

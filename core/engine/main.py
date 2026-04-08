@@ -17,7 +17,7 @@ class GameEngine(QObject):
     answer_result = Signal(bool, object)
     
     # New signals for Gamification
-    game_over = Signal(int, int, bool)
+    game_over = Signal(dict)
     lives_changed = Signal(int)
     helper_used = Signal(int)
 
@@ -63,6 +63,11 @@ class GameEngine(QObject):
         if not current_q:
             return
 
+        # Track time and count
+        time_taken = TIME_PER_QUESTION - self.remaining_time
+        self.state.total_time_taken += time_taken
+        self.state.answered_count += 1
+
         correct_answer = next((ans for ans in current_q.answers if ans.is_correct), None)
         is_correct = False
         
@@ -72,16 +77,22 @@ class GameEngine(QObject):
             self.state.correct_answers_count += 1
         else:
             self.state.lives -= 1
+            # Record the mistake (Question and the Correct Answer)
+            if correct_answer:
+                self.state.mistakes.append((current_q, correct_answer))
             self.lives_changed.emit(self.state.lives)
 
         self.answer_result.emit(is_correct, correct_answer)
-
-        if self.state.lives <= 0:
-            self._trigger_game_over()
+        
+        # Removed the immediate _trigger_game_over() here to allow 
+        # the UI to display the correct answer for 2.5 seconds first.
 
     def advance(self):
+        # Check if the player still has lives before loading the next question
         if self.state.lives > 0:
             self._next_question()
+        else:
+            self._trigger_game_over()
 
     def _next_question(self):
         self.state.current_index += 1
@@ -100,7 +111,21 @@ class GameEngine(QObject):
     def _trigger_game_over(self):
         max_score = len(self.state.questions) * POINTS_PER_QUESTION
         is_win = (self.state.correct_answers_count >= PASSING_SCORE) and (self.state.lives > 0)
-        self.game_over.emit(self.state.score, max_score, is_win)
+
+        avg_time = 0
+        if self.state.answered_count > 0:
+            avg_time = self.state.total_time_taken // self.state.answered_count
+            
+        stats = {
+            "score": self.state.score,
+            "max_score": max_score,
+            "is_win": is_win,
+            "correct_count": self.state.correct_answers_count,
+            "wrong_count": len(self.state.mistakes),
+            "avg_time": avg_time,
+            "mistakes": self.state.mistakes
+        }
+        self.game_over.emit(stats)
 
     def _reset_timer(self):
         self.remaining_time = TIME_PER_QUESTION

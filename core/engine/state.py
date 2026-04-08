@@ -1,5 +1,5 @@
-from typing import List, Optional
-from data.models import Question
+from typing import List, Optional, Tuple
+from data.models import Question, Answer
 
 class GameState:
     def __init__(self):
@@ -10,6 +10,11 @@ class GameState:
         self.lives: int = 3
         self.helper_used: bool = False
         
+        # New tracking variables
+        self.mistakes: List[Tuple[Question, Answer]] = []
+        self.total_time_taken: int = 0
+        self.answered_count: int = 0
+        
     def reset(self, questions: List[Question]):
         self.questions = questions
         self.current_index = -1
@@ -17,6 +22,9 @@ class GameState:
         self.correct_answers_count = 0
         self.lives = 3
         self.helper_used = False
+        self.mistakes.clear()
+        self.total_time_taken = 0
+        self.answered_count = 0
 
     @property
     def current_question(self) -> Optional[Question]:

@@ -10,7 +10,8 @@ class GameScreen(QWidget):
     Main gameplay screen. Displays questions, handles answers, 
     and updates the UI based on GameEngine signals.
     """
-    game_finished = Signal(int, int, bool) # score, max_score, is_win
+    # Updated to receive a dictionary containing all stats
+    game_finished = Signal(dict) 
 
     def __init__(self, view_model):
         super().__init__()
@@ -163,10 +164,9 @@ class GameScreen(QWidget):
         # Wait 2.5 seconds before moving to the next question automatically
         QTimer.singleShot(2500, self.view_model.advance_game)
 
-    def _on_game_over(self, score, max_score, is_win):
-        self.game_finished.emit(score, max_score, is_win)
-
-
+    # Updated to receive the stats dictionary directly
+    def _on_game_over(self, stats: dict):
+        self.game_finished.emit(stats)
 
     def keyPressEvent(self, event):
         """Handle keyboard shortcuts for accessibility."""
@@ -200,4 +200,3 @@ class GameScreen(QWidget):
         else:
             # Pass other keys to the default handler
             super().keyPressEvent(event)
-
