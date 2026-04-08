@@ -165,3 +165,39 @@ class GameScreen(QWidget):
 
     def _on_game_over(self, score, max_score, is_win):
         self.game_finished.emit(score, max_score, is_win)
+
+
+
+    def keyPressEvent(self, event):
+        """Handle keyboard shortcuts for accessibility."""
+        key = event.key()
+        
+        # Shortcut 'T' for Time
+        if key == Qt.Key.Key_T:
+            remaining = self.view_model.engine.remaining_time
+            self.view_model.read_text(f"الوقت المتبقي {remaining} ثانية", interrupt=True)
+            
+        # Shortcut 'H' for Hearts (Lives)
+        elif key == Qt.Key.Key_H:
+            lives = self.view_model.engine.state.lives
+            lives_msg = ""
+            if lives == 1:
+                lives_msg = "لديك قلب واحد"
+            elif lives == 2:
+                lives_msg = "لديك قلبان"
+            elif lives == 3:
+                lives_msg = "لديك ثلاثة قلوب"
+            else:
+                lives_msg = "لا يوجد لديك قلوب"
+            self.view_model.read_text(lives_msg, interrupt=True)
+            
+        # Shortcut 'A' for Question (Ask)
+        elif key == Qt.Key.Key_A:
+            question = self.view_model.engine.state.current_question
+            if question:
+                self.view_model.read_text(question.question, interrupt=True)
+        
+        else:
+            # Pass other keys to the default handler
+            super().keyPressEvent(event)
+

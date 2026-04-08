@@ -59,20 +59,21 @@ class MainWindow(QMainWindow):
         self.view_model.read_text("بدأ التحدي.", interrupt=False)
 
     def _on_game_finished(self, score: int, max_score: int, is_win: bool):
-        """Handles game end, unlocks levels, and shows the result."""
-        title = "انتهت اللعبة"
+        # Calculate number of correct answers based on points
+        from core.constants import POINTS_PER_QUESTION
+        correct_count = score // POINTS_PER_QUESTION
+        total_questions = len(self.view_model.engine.state.questions)
         
         if is_win:
             self.view_model.audio.play_sound("correct")
-            msg = f"مبروك! لقد فزت.\nالنتيجة: {score} من {max_score}"
+            msg = f"مبروك! لقد فزت.\nلقد أجبت على {correct_count} سؤال من {total_questions}."
             
-            # Unlock next level logic
             unlocked = self.view_model.settings.unlock_next_level(self.current_topic, self.current_level)
             if unlocked:
                 msg += "\n\nتم فتح مستوى جديد!"
         else:
             self.view_model.audio.play_sound("wrong")
-            msg = f"حظ أوفر في المرة القادمة.\nالنتيجة: {score} من {max_score}"
+            msg = f"حظ أوفر في المرة القادمة.\nلقد أجبت على {correct_count} سؤال من {total_questions}."
 
         self.view_model.read_text(msg, interrupt=True)
         
