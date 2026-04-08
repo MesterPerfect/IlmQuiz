@@ -3,7 +3,7 @@ import logging
 from PySide6.QtWidgets import QApplication
 
 from data.db_manager import DBManager
-from core.game_engine import GameEngine
+from core.engine import GameEngine
 from services.settings_manager import SettingsManager
 from services.tts import create_tts
 from services.audio_service import AudioService
@@ -30,11 +30,11 @@ def main():
     
     # 3. Initialize ViewModel (The Orchestrator)
     view_model = GameViewModel(
-        settings_manager=settings_manager
         db_manager=db_manager,
         game_engine=game_engine,
         tts_service=tts_service,
-        audio_service=audio_service
+        audio_service=audio_service,
+        settings_manager=settings_manager
     )
     
     # 4. Initialize and show the Main Window
@@ -46,6 +46,7 @@ def main():
             app.setStyleSheet(f.read())
     except Exception as e:
         logging.error(f"Failed to load theme: {e}")
+    
     window.show()
     
     # 5. Announce startup for accessibility
