@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication
 
 from data.db_manager import DBManager
 from core.game_engine import GameEngine
+from services.settings_manager import SettingsManager
 from services.tts import create_tts
 from services.audio_service import AudioService
 from ui.view_models.game_view_model import GameViewModel
@@ -21,6 +22,7 @@ def main():
     app = QApplication(sys.argv)
     
     # 2. Initialize Services and Core Engine
+    settings_manager = SettingsManager()
     db_manager = DBManager()
     tts_service = create_tts()
     audio_service = AudioService()
@@ -28,6 +30,7 @@ def main():
     
     # 3. Initialize ViewModel (The Orchestrator)
     view_model = GameViewModel(
+        settings_manager=settings_manager
         db_manager=db_manager,
         game_engine=game_engine,
         tts_service=tts_service,
