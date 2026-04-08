@@ -7,6 +7,7 @@ class CategoriesScreen(QWidget):
     """Screen displaying the main quiz categories with icons and descriptions."""
     
     category_selected = Signal(int)
+    settings_requested = Signal()
 
     def __init__(self, view_model):
         super().__init__()
@@ -27,10 +28,25 @@ class CategoriesScreen(QWidget):
         layout.setContentsMargins(30, 30, 30, 30)
         layout.setSpacing(20)
 
+        # Create a header layout for the title and settings button
+        header_layout = QHBoxLayout()
+        
+        self.settings_btn = QPushButton("الإعدادات")
+        self.settings_btn.setObjectName("back_button") # Reusing the style
+        self.settings_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.settings_btn.clicked.connect(self.settings_requested.emit)
+
         title_label = QLabel("اختر تصنيفاً لنبدأ التحدي")
         title_label.setObjectName("screen_title")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        header_layout.addWidget(self.settings_btn)
+        header_layout.addWidget(title_label, 1)
+        layout.addLayout(header_layout)
+
         layout.addWidget(title_label)
+
+
 
         grid_layout = QGridLayout()
         grid_layout.setSpacing(20)

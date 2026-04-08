@@ -51,8 +51,23 @@ class GameViewModel(QObject):
         self.engine.abort_game()
         self.tts.stop()
 
+    # Add this function to save and apply settings
+    def update_settings(self, tts_enabled: bool, volume: float):
+        if "settings" not in self.settings.data:
+            self.settings.data["settings"] = {}
+            
+        self.settings.data["settings"]["tts_enabled"] = tts_enabled
+        self.settings.data["settings"]["audio_volume"] = volume
+        self.settings.save()
+        
+        # Apply volume immediately to the audio service
+        self.audio.set_volume(volume)
+
+    # Update this existing function to check the settings before speaking
     def read_text(self, text: str, interrupt: bool = True):
-        self.tts.speak(text, interrupt)
+        tts_enabled = self.settings.data.get("settings", {}).get("tts_enabled", True)
+        if tts_enabled:
+            self.tts.speak(text, interrupt)
 
     # =========================================================
     # Internal Signal Handlers for Automated Media Feedback
