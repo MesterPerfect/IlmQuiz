@@ -232,3 +232,31 @@ QRadioButton::indicator {
     background-color: #555555;
     color: #888888;
 }
+/* Level Selection Buttons */
+#level_button {
+    background-color: #2196F3;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 400px;
+    border: none;
+}
+
+#level_button:hover {
+    background-color: #64B5F6;
+}
+
+#level_button:disabled {
+    background-color: #333333;
+    color: #777777;
+    border: 1px solid #444444;
+}
+
+#level_msg_label {
+    font-size: 24px;
+    color: #FFC107;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
