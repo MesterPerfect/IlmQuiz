@@ -13,12 +13,13 @@ class GameViewModel(QObject):
     # Signal to notify UI if an error occurs (e.g., no questions found)
     error_occurred = Signal(str)
 
-    def __init__(self, db_manager, game_engine: GameEngine, tts_service, audio_service):
+    def __init__(self, db_manager, game_engine: GameEngine, tts_service, audio_service, settings_manager):
         super().__init__()
         self.db = db_manager
         self.engine = game_engine
         self.tts = tts_service
         self.audio = audio_service
+        self.settings = settings_manager
 
         # Connect GameEngine signals to internal handlers for audio/tts
         self.engine.time_warning.connect(self._handle_time_warning)
