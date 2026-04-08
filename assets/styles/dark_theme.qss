@@ -158,3 +158,77 @@ QRadioButton::indicator {
     border: 1px solid #4CAF50;
     outline: none;
 }
+/* Game Screen Elements */
+#timer_label, #counter_label, #lives_label {
+    font-size: 20px;
+    font-weight: bold;
+    color: #FFC107; /* Amber color for top stats */
+}
+
+#lives_label {
+    color: #F44336;
+}
+
+#question_label {
+    font-size: 32px;
+    color: #FFFFFF;
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 15px;
+    padding: 30px;
+}
+
+#answer_radio {
+    font-size: 22px;
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+#answer_radio:hover {
+    background-color: #2D2D2D;
+    border: 1px solid #4CAF50;
+}
+
+#answer_radio:checked {
+    background-color: #2D2D2D;
+    border: 1px solid #2196F3;
+    color: #2196F3;
+}
+
+#answer_radio:disabled {
+    color: #555555;
+    background-color: #121212;
+    border: 1px solid #222222;
+}
+
+#helper_button {
+    background-color: #FF9800;
+    color: #000000;
+    max-width: 200px;
+}
+
+#helper_button:hover {
+    background-color: #FFB74D;
+}
+
+#helper_button:disabled {
+    background-color: #555555;
+    color: #888888;
+}
+
+#submit_button {
+    background-color: #2196F3;
+    color: #FFFFFF;
+    max-width: 200px;
+}
+
+#submit_button:hover {
+    background-color: #64B5F6;
+}
+
+#submit_button:disabled {
+    background-color: #555555;
+    color: #888888;
+}
