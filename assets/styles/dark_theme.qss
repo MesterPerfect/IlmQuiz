@@ -91,3 +91,70 @@ QLabel {
     line-height: 1.4;
     padding: 5px;
 }
+/* Topics Screen */
+#back_button {
+    background-color: #333333;
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 100px;
+}
+
+#back_button:hover {
+    background-color: #f44336;
+}
+
+#level_frame {
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+#level_label {
+    font-size: 18px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin-right: 15px;
+}
+
+QRadioButton {
+    font-size: 18px;
+    color: #E0E0E0;
+    padding: 5px;
+}
+
+QRadioButton::indicator {
+    width: 20px;
+    height: 20px;
+}
+
+#topics_scroll {
+    border: none;
+    background: transparent;
+}
+
+#topics_scroll QWidget {
+    background: transparent;
+}
+
+#topic_button {
+    background-color: #1E1E1E;
+    color: #E0E0E0;
+    border: 1px solid #333333;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 18px;
+}
+
+#topic_button:hover {
+    background-color: #2D2D2D;
+    border: 1px solid #2196F3;
+    color: #FFFFFF;
+}
+
+#topic_button:focus {
+    background-color: #2D2D2D;
+    border: 1px solid #4CAF50;
+    outline: none;
+}
