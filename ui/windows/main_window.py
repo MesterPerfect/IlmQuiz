@@ -58,16 +58,21 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.game_screen)
         self.view_model.read_text("بدأ التحدي.", interrupt=False)
 
+
     def _on_game_finished(self, score: int, max_score: int, is_win: bool):
         # Calculate number of correct answers based on points
         from core.constants import POINTS_PER_QUESTION
         correct_count = score // POINTS_PER_QUESTION
         total_questions = len(self.view_model.engine.state.questions)
         
+        # Define the missing title variable
+        title = "انتهت اللعبة"
+        
         if is_win:
             self.view_model.audio.play_sound("correct")
             msg = f"مبروك! لقد فزت.\nلقد أجبت على {correct_count} سؤال من {total_questions}."
             
+            # Unlock next level logic
             unlocked = self.view_model.settings.unlock_next_level(self.current_topic, self.current_level)
             if unlocked:
                 msg += "\n\nتم فتح مستوى جديد!"
@@ -88,3 +93,4 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.topics_screen)
         # Reload topics to refresh the unlock status visually
         self.topics_screen._show_levels(self.current_topic, self.topics_screen.title_label.text().replace("موضوع: ", ""))
+
