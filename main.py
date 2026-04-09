@@ -48,7 +48,6 @@ def main():
         logger.error(f"Failed to load theme: {e}")
     
     window.show()
-    tts_service.speak("Welcome to IlmQuiz.")
     
     exit_code = app.exec()
     

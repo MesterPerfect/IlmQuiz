@@ -40,6 +40,21 @@ QLabel {
     color: #4CAF50;
 }
 
+/* Welcome Screen */
+#welcome_title {
+    font-size: 64px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin-bottom: 0px;
+}
+
+#welcome_subtitle {
+    font-size: 28px;
+    color: #E0E0E0;
+    margin-top: 0px;
+    margin-bottom: 40px;
+}
+
 /* Screen Title */
 #screen_title {
     font-size: 32px;
