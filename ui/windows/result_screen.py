@@ -42,6 +42,8 @@ class ResultScreen(QWidget):
         for idx, lbl in enumerate([self.score_label, self.speed_label, self.correct_label, self.wrong_label]):
             lbl.setObjectName("stat_label")
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            # Make label focusable for screen readers
+            lbl.setFocusPolicy(Qt.FocusPolicy.StrongFocus) 
             row = idx // 2
             col = idx % 2
             stats_layout.addWidget(lbl, row, col)

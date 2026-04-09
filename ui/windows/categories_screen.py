@@ -8,6 +8,7 @@ class CategoriesScreen(QWidget):
     
     category_selected = Signal(int)
     settings_requested = Signal()
+    stats_requested = Signal()
 
     def __init__(self, view_model):
         super().__init__()
@@ -30,17 +31,25 @@ class CategoriesScreen(QWidget):
 
         # Create a header layout for the title and settings button
         header_layout = QHBoxLayout()
-        
+
+        # Settings Button        
         self.settings_btn = QPushButton("الإعدادات")
         self.settings_btn.setObjectName("back_button") # Reusing the style
         self.settings_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.settings_btn.clicked.connect(self.settings_requested.emit)
+
+        # Stats Button
+        self.stats_btn = QPushButton("الإحصائيات")
+        self.stats_btn.setObjectName("back_button")
+        self.stats_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.stats_btn.clicked.connect(self.stats_requested.emit)
 
         title_label = QLabel("اختر تصنيفاً لنبدأ التحدي")
         title_label.setObjectName("screen_title")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         header_layout.addWidget(self.settings_btn)
+        header_layout.addWidget(self.stats_btn)
         header_layout.addWidget(title_label, 1)
         layout.addLayout(header_layout)
 

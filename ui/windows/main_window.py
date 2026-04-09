@@ -3,6 +3,7 @@ from PySide6.QtCore import QTimer
 
 from .categories_screen import CategoriesScreen
 from .settings_screen import SettingsScreen
+from .stats_screen import StatsScreen 
 from .topics_screen import TopicsScreen
 from .game_screen import GameScreen
 from .result_screen import ResultScreen
@@ -31,18 +32,21 @@ class MainWindow(QMainWindow):
         self.topics_screen = TopicsScreen(self.view_model)
         self.game_screen = GameScreen(self.view_model)
         self.settings_screen = SettingsScreen(self.view_model)
+        self.stats_screen = StatsScreen(self.view_model)
         self.result_screen = ResultScreen(self.view_model)
         self.review_screen = ReviewScreen(self.view_model)
 
         # Connect signals
         self.categories_screen.category_selected.connect(self._on_category_selected)
         self.categories_screen.settings_requested.connect(self._show_settings_screen)
+        self.categories_screen.stats_requested.connect(self._show_stats_screen)
         self.topics_screen.back_requested.connect(self._show_categories_screen)
         self.topics_screen.topic_selected.connect(self._on_topic_selected)
         self.game_screen.game_finished.connect(self._on_game_finished)
         self.settings_screen.back_requested.connect(self._show_categories_screen)
         
         # Result and Review signals
+        self.stats_screen.back_requested.connect(self._show_categories_screen)
         self.result_screen.back_requested.connect(self._show_categories_screen)
         self.result_screen.review_requested.connect(self._show_review_screen)
         self.review_screen.back_requested.connect(self._show_result_screen)
@@ -51,6 +55,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.topics_screen)
         self.stacked_widget.addWidget(self.game_screen)
         self.stacked_widget.addWidget(self.settings_screen)
+        self.stacked_widget.addWidget(self.stats_screen)
         self.stacked_widget.addWidget(self.result_screen)
         self.stacked_widget.addWidget(self.review_screen)
 
@@ -59,6 +64,10 @@ class MainWindow(QMainWindow):
     def _show_settings_screen(self):
         self.stacked_widget.setCurrentWidget(self.settings_screen)
         self.view_model.read_text("شاشة الإعدادات", interrupt=True)
+
+    def _show_stats_screen(self):
+        self.stats_screen.refresh_stats()
+        self.stacked_widget.setCurrentWidget(self.stats_screen)
 
     def _show_categories_screen(self):
         self.stacked_widget.setCurrentWidget(self.categories_screen)

@@ -59,10 +59,14 @@ class ReviewScreen(QWidget):
             q_label = QLabel(f"السؤال {idx + 1}: {question.question}")
             q_label.setObjectName("review_question")
             q_label.setWordWrap(True)
+            # Make question text readable by screen readers
+            q_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus) 
             
             ans_label = QLabel(f"الإجابة الصحيحة: {correct_answer.answer}")
             ans_label.setObjectName("review_answer")
             ans_label.setWordWrap(True)
+            # Make answer text readable by screen readers
+            ans_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus) 
             
             card_layout.addWidget(q_label)
             card_layout.addWidget(ans_label)

@@ -93,3 +93,29 @@ class GameViewModel(QObject):
         else:
             self.audio.play_sound("wrong")
             self.tts.speak("إجابة خاطئة", interrupt=True)
+
+
+    def get_global_stats(self) -> dict:
+        """Calculates overall progress across all categories and topics."""
+        categories = self.db.get_all_categories()
+        total_topics = 0
+        
+        for cat in categories:
+            topics = self.db.get_topics_by_category(cat.id)
+            total_topics += len(topics)
+            
+        total_levels = total_topics * 3
+        completed_levels = 0
+        
+        progress = self.settings.data.get("progress", {})
+        for topic_id, unlocked_level in progress.items():
+            # If unlocked_level is 2, it means level 1 is completed. Max is 4 (3 levels completed)
+            completed = min(unlocked_level - 1, 3)
+            completed_levels += completed
+            
+        return {
+            "total_topics": total_topics,
+            "total_levels": total_levels,
+            "completed_levels": completed_levels,
+            "remaining_levels": total_levels - completed_levels
+        }

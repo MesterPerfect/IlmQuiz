@@ -55,7 +55,8 @@ class SettingsManager:
         
         next_level = completed_level + 1
         
-        if next_level > current_unlocked and next_level <= 3:
+        # Changed 3 to 4 to track full completion (level 4 means all 3 levels are done)
+        if next_level > current_unlocked and next_level <= 4:
             self.data["progress"][topic_str] = next_level
             self.save()
             return True
