@@ -1,20 +1,17 @@
-import os
 import sys
 import logging
 import platform
 import PySide6
+from core.constants import LOG_FILE_PATH
 
 def setup_logging():
-    # Create logs directory if it doesn't exist
-    os.makedirs("logs", exist_ok=True)
-    log_file = os.path.join("logs", "app.log")
-    
-    # force=True is the magic key to override any existing empty loggers
+    # Directory creation is now handled by core.constants
+    # force=True overrides any existing empty loggers
     logging.basicConfig(
         level=logging.INFO,
         format='%(levelname)s - %(name)s - %(message)s',
         handlers=[
-            logging.FileHandler(log_file, mode='a', encoding='utf-8'),
+            logging.FileHandler(LOG_FILE_PATH, mode='a', encoding='utf-8'),
             logging.StreamHandler(sys.stdout)
         ],
         force=True 
@@ -22,7 +19,6 @@ def setup_logging():
     
     logger = logging.getLogger("app.application")
     
-    # Log system environment details
     logger.info("========================================")
     logger.info("SYSTEM ENVIRONMENT INFO")
     logger.info("========================================")

@@ -2,11 +2,12 @@ import sqlite3
 import logging
 from typing import List, Optional, Tuple
 from .models import Category, Topic, Question, Answer
+from core.constants import DB_PATH
 
 logger = logging.getLogger(__name__)
 
 class DBManager:
-    def __init__(self, db_path: str = "assets/database/quiz.db"):
+    def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
 
     def _get_connection(self) -> Optional[sqlite3.Connection]:

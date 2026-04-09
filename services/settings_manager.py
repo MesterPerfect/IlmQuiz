@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+from core.constants import SETTINGS_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +10,7 @@ class SettingsManager:
     Manages user preferences and game progress in an external JSON file.
     If the user deletes this file, all progress and settings are reset to default.
     """
-    def __init__(self, filepath: str = "user_data.json"):
+    def __init__(self, filepath: str = SETTINGS_PATH):
         self.filepath = filepath
         self.data = {
             "settings": {
@@ -26,22 +27,22 @@ class SettingsManager:
             try:
                 with open(self.filepath, "r", encoding="utf-8") as f:
                     file_data = json.load(f)
-                    # Update self.data to keep default keys if they are missing in the file
-                    self.data["settings"].update(file_data.get("settings", {}))
-                    self.data["progress"].update(file_data.get("progress", {}))
+                    # Update default dict with loaded data
+                    if "progress" in file_data:
+                        self.data["progress"].update(file_data["progress"])
+                    if "settings" in file_data:
+                        self.data["settings"].update(file_data["settings"])
             except Exception as e:
-                logger.error(f"Failed to load settings file: {e}")
-                self.save() 
-        else:
-            self.save()
+                print(f"Failed to load settings: {e}")
 
     def save(self):
         """Saves current data to the JSON file."""
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
         try:
             with open(self.filepath, "w", encoding="utf-8") as f:
-                json.dump(self.data, f, indent=4)
+                json.dump(self.data, f, indent=4, ensure_ascii=False)
         except Exception as e:
-            logger.error(f"Failed to save settings file: {e}")
+            print(f"Failed to save settings: {e}")
 
     def get_unlocked_level(self, topic_id: int) -> int:
         """Returns the highest unlocked level for a specific topic (1=Easy, 2=Medium, 3=Hard)."""
