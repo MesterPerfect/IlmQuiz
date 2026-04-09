@@ -47,6 +47,7 @@ class CategoriesScreen(QWidget):
         title_label = QLabel("اختر تصنيفاً لنبدأ التحدي")
         title_label.setObjectName("screen_title")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         header_layout.addWidget(self.settings_btn)
         header_layout.addWidget(self.stats_btn)
