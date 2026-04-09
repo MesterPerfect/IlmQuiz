@@ -39,19 +39,11 @@ class GameViewModel(QObject):
             self.error_occurred.emit("No questions available for this topic and level.")
             return
             
-        # Fetch names for logging purposes
-        topic = next((t for cat in self.db.get_all_categories() 
-                     for t in self.db.get_topics_by_category(cat.id) 
-                     if t.id == topic_id), None)
+        # Use the new DB function to get clean names for the logger
+        category_name, topic_name = self.db.get_topic_details(topic_id)
         
-        category_name = "Unknown"
-        topic_name = topic.name if topic else "Unknown"
-        
-        # If your DBManager supports getting category by topic_id directly, use it here.
-        # For now, we will pass the topic name and level to the engine.
         self.engine.load_questions(questions, category_name, topic_name, level)
         self.engine.start_game()
-
 
     def submit_answer(self, answer_id: int):
         self.engine.check_answer(answer_id)

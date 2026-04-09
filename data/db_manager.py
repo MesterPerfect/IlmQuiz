@@ -1,11 +1,9 @@
 import sqlite3
 import logging
-import random
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from .models import Category, Topic, Question, Answer
 
-# Initialize logger for database errors
-logging.basicConfig(level=logging.ERROR, filename='app_errors.log')
+logger = logging.getLogger(__name__)
 
 class DBManager:
     def __init__(self, db_path: str = "assets/database/quiz.db"):
@@ -18,7 +16,7 @@ class DBManager:
             conn.row_factory = sqlite3.Row
             return conn
         except sqlite3.Error as e:
-            logging.error(f"Database connection error: {e}")
+            logger.error(f"Database connection error: {e}")
             return None
 
     def get_all_categories(self) -> List[Category]:
@@ -34,7 +32,7 @@ class DBManager:
             for row in rows:
                 categories.append(Category(**dict(row)))
         except sqlite3.Error as e:
-            logging.error(f"Error fetching categories: {e}")
+            logger.error(f"Error fetching categories: {e}")
         finally:
             conn.close()
         return categories
@@ -52,7 +50,7 @@ class DBManager:
             for row in rows:
                 topics.append(Topic(**dict(row)))
         except sqlite3.Error as e:
-            logging.error(f"Error fetching topics: {e}")
+            logger.error(f"Error fetching topics: {e}")
         finally:
             conn.close()
         return topics
@@ -76,7 +74,7 @@ class DBManager:
                 question_obj.answers = self._get_answers_for_question(cursor, question_obj.id)
                 questions.append(question_obj)
         except sqlite3.Error as e:
-            logging.error(f"Error fetching questions: {e}")
+            logger.error(f"Error fetching questions: {e}")
         finally:
             conn.close()
         return questions
@@ -93,5 +91,32 @@ class DBManager:
                 data['is_correct'] = bool(data['is_correct'])
                 answers.append(Answer(**data))
         except sqlite3.Error as e:
-            logging.error(f"Error fetching answers for question {question_id}: {e}")
+            logger.error(f"Error fetching answers for question {question_id}: {e}")
         return answers
+
+    def get_topic_details(self, topic_id: int) -> Tuple[str, str]:
+        """
+        Fetches the category name and topic name for logging purposes.
+        Returns a tuple: (category_name, topic_name)
+        """
+        conn = self._get_connection()
+        if not conn: return ("Unknown", "Unknown")
+
+        try:
+            cursor = conn.cursor()
+            query = """
+            SELECT c.name as cat_name, t.name as topic_name 
+            FROM topics t
+            JOIN categories c ON t.category_id = c.id
+            WHERE t.id = ?
+            """
+            cursor.execute(query, (topic_id,))
+            row = cursor.fetchone()
+            if row:
+                return (row['cat_name'], row['topic_name'])
+        except sqlite3.Error as e:
+            logger.error(f"Error fetching topic details for logging: {e}")
+        finally:
+            conn.close()
+            
+        return ("Unknown", "Unknown")
