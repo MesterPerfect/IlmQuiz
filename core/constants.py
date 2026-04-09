@@ -1,43 +1,52 @@
 import os
 import sys
 import platform
+import shutil
 
 # 1. Determine the Base Directory (Read-only for installed apps)
 IS_FROZEN = getattr(sys, 'frozen', False)
 
 if IS_FROZEN:
-    # If compiled via PyInstaller, use the executable's directory
     BASE_DIR = os.path.dirname(sys.executable)
 else:
-    # If running from source code, use the project root directory
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # 2. Check for Portable Mode
-# If a file named ".portable" exists next to the exe, it's portable mode
 IS_PORTABLE = os.path.exists(os.path.join(BASE_DIR, ".portable"))
 
 # 3. Determine User Data Directory (Read/Write permissions required)
 APP_NAME = "IlmQuiz"
+SYSTEM_OS = platform.system()
 
 if IS_PORTABLE or not IS_FROZEN:
-    # In portable mode or development, save data in the app folder
     USER_DATA_DIR = BASE_DIR
 else:
-    # In installed mode, use the OS-specific app data folder
-    system = platform.system()
-    if system == "Windows":
+    if SYSTEM_OS == "Windows":
         USER_DATA_DIR = os.path.join(os.environ.get("APPDATA", ""), APP_NAME)
-    elif system == "Darwin": # macOS
+    elif SYSTEM_OS == "Darwin": # macOS
         USER_DATA_DIR = os.path.join(os.path.expanduser("~"), "Library", "Application Support", APP_NAME)
     else: # Linux
         USER_DATA_DIR = os.path.join(os.path.expanduser("~"), ".config", APP_NAME)
 
 # Ensure necessary directories exist
-os.makedirs(os.path.join(USER_DATA_DIR, "database"), exist_ok=True)
 os.makedirs(os.path.join(USER_DATA_DIR, "logs"), exist_ok=True)
 
 # 4. Define specific file paths
-DB_PATH = os.path.join(USER_DATA_DIR, "database", "quiz.db")
+if IS_PORTABLE or not IS_FROZEN:
+    # In portable or dev mode, deal with the database directly from assets
+    DB_PATH = os.path.join(BASE_DIR, "assets", "database", "quiz.db")
+else:
+    # In installed mode, read from the OS config directory
+    os.makedirs(os.path.join(USER_DATA_DIR, "database"), exist_ok=True)
+    DB_PATH = os.path.join(USER_DATA_DIR, "database", "quiz.db")
+    
+    # Inno Setup handles copying on Windows safely. 
+    # Python fallback is only used for Mac and Linux installations.
+    if SYSTEM_OS != "Windows":
+        original_db = os.path.join(BASE_DIR, "assets", "database", "quiz.db")
+        if not os.path.exists(DB_PATH) and os.path.exists(original_db):
+            shutil.copy2(original_db, DB_PATH)
+
 SETTINGS_PATH = os.path.join(USER_DATA_DIR, "settings.json")
 LOG_FILE_PATH = os.path.join(USER_DATA_DIR, "logs", "app.log")
 
