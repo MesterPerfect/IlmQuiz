@@ -32,14 +32,26 @@ class GameViewModel(QObject):
     def get_topics(self, category_id: int):
         return self.db.get_topics_by_category(category_id)
 
+
     def start_round(self, topic_id: int, level: int):
         questions = self.db.get_questions_by_topic_and_level(topic_id, level)
         if not questions:
             self.error_occurred.emit("No questions available for this topic and level.")
             return
             
-        self.engine.load_questions(questions)
+        # Fetch names for logging purposes
+        topic = next((t for cat in self.db.get_all_categories() 
+                     for t in self.db.get_topics_by_category(cat.id) 
+                     if t.id == topic_id), None)
+        
+        category_name = "Unknown"
+        topic_name = topic.name if topic else "Unknown"
+        
+        # If your DBManager supports getting category by topic_id directly, use it here.
+        # For now, we will pass the topic name and level to the engine.
+        self.engine.load_questions(questions, category_name, topic_name, level)
         self.engine.start_game()
+
 
     def submit_answer(self, answer_id: int):
         self.engine.check_answer(answer_id)

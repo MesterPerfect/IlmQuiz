@@ -29,9 +29,11 @@ class GameEngine(QObject):
         self.timer.timeout.connect(self._on_timer_tick)
         self.remaining_time = 0
 
-    def load_questions(self, questions: List[Question]):
+    def load_questions(self, questions: List[Question], category_name: str, topic_name: str, level: int):
         self.state.reset(questions)
+        # Log detailed info about the loaded round
         logger.info(f"GameEngine loaded {len(self.state.questions)} questions.")
+        logger.info(f"Round Context -> Category: {category_name} | Topic: {topic_name} | Level: {level}")
 
     def start_game(self):
         if not self.state.questions:
