@@ -4,6 +4,9 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, Signal, QUrl
 from PySide6.QtGui import QDesktopServices, QPixmap
 
+# Added global constants import to fix pathing and versioning
+import core.constants as const
+
 class AboutScreen(QWidget):
     """Displays information about the application and the developer."""
     
@@ -44,8 +47,8 @@ class AboutScreen(QWidget):
         header_layout.addWidget(self.title_label, 1)
         self.content_layout.addLayout(header_layout)
 
-        # App Info Section
-        self.app_name_label = QLabel("IlmQuiz v1.0.0")
+        # App Info Section (Using dynamic global version)
+        self.app_name_label = QLabel(f"IlmQuiz v{const.APP_VERSION}")
         self.app_name_label.setObjectName("about_app_name")
         self.app_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.app_name_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -73,8 +76,8 @@ class AboutScreen(QWidget):
         self.profile_pic = QLabel()
         self.profile_pic.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # Determine the image path from the assets folder
-        image_path = os.path.join("assets", "images", "profile.jpg")
+        # Fixed path resolution using absolute BASE_DIR for frozen compatibility
+        image_path = os.path.join(const.BASE_DIR, "assets", "images", "profile.jpg")
         
         if os.path.exists(image_path):
             pixmap = QPixmap(image_path).scaled(
@@ -165,5 +168,6 @@ class AboutScreen(QWidget):
     def _open_url(self, url: str):
         """Opens the provided URL in the user's default web browser."""
         QDesktopServices.openUrl(QUrl(url))
-        if hasattr(self.view_model, 'tts'):
-            self.view_model.tts.speak("جاري فتح الرابط في المتصفح الافتراضي.", interrupt=True)
+        
+        # Centralized TTS announcement respecting user settings
+        self.view_model.read_text("جاري فتح الرابط في المتصفح الافتراضي.", interrupt=True)
