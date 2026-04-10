@@ -47,12 +47,13 @@ def main():
         "build_exe": build_dir,
         "optimize": 2,
         "include_files": include_files,
-        "packages": ["core", "data", "services", "ui"],
+        # Added 'packaging' to ensure UpdateChecker parses versions correctly
+        "packages": ["core", "data", "services", "ui", "packaging"], 
         "includes": ["PySide6.QtCore", "PySide6.QtWidgets", "PySide6.QtGui", "PySide6.QtMultimedia"],
         "excludes": ["tkinter", "test", "setuptools", "pip", "numpy", "unittest"],
     }
 
-    # Define icon path (will be applied if it exists)
+    # Define icon path
     icon_path = os.path.join("assets", "icons", "app_icon.ico")
     icon_file = icon_path if sys.platform == "win32" and os.path.exists(icon_path) else None
 
@@ -78,7 +79,6 @@ def main():
             )
         ],
     )
-
 
     clean_unused_folders(build_dir)
 
