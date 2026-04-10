@@ -1,15 +1,20 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                               QLabel, QCheckBox, QSlider, QFrame)
+                               QLabel, QCheckBox, QSlider, QFrame, QMessageBox)
 from PySide6.QtCore import Qt, Signal
+import os
+
+from services.updater import UpdateChecker
+from ui.windows.update_dialog import UpdateDialog
 
 class SettingsScreen(QWidget):
-    """Screen for configuring user preferences like TTS and Volume."""
+    """Screen for configuring user preferences like TTS, Volume, Logging, and Updates."""
     
     back_requested = Signal()
 
     def __init__(self, view_model):
         super().__init__()
         self.view_model = view_model
+        self.checker = None
         self._setup_ui()
         self._load_current_settings()
 
@@ -38,16 +43,16 @@ class SettingsScreen(QWidget):
         settings_frame = QFrame()
         settings_frame.setObjectName("settings_frame")
         settings_layout = QVBoxLayout(settings_frame)
-        settings_layout.setSpacing(40)
+        settings_layout.setSpacing(30)
 
-        # TTS Toggle Checkbox
+        # 1. TTS Toggle Checkbox
         self.tts_checkbox = QCheckBox("تفعيل الناطق الصوتي (TTS)")
         self.tts_checkbox.setObjectName("settings_checkbox")
         self.tts_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.tts_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.tts_checkbox)
 
-        # Volume Slider
+        # 2. Volume Slider
         volume_layout = QHBoxLayout()
         volume_label = QLabel("مستوى المؤثرات الصوتية:")
         volume_label.setObjectName("settings_label")
@@ -62,36 +67,101 @@ class SettingsScreen(QWidget):
         
         volume_layout.addWidget(volume_label)
         volume_layout.addWidget(self.volume_slider)
-        
         settings_layout.addLayout(volume_layout)
+
+        # 3. Logging Toggle Checkbox
+        self.logging_checkbox = QCheckBox("تفعيل حفظ السجلات (Logging) للمساعدة في حل المشاكل")
+        self.logging_checkbox.setObjectName("settings_checkbox")
+        self.logging_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.logging_checkbox.stateChanged.connect(self._on_settings_changed)
+        settings_layout.addWidget(self.logging_checkbox)
+
+        # 4. Auto Update Toggle Checkbox
+        self.auto_update_checkbox = QCheckBox("البحث عن التحديثات تلقائياً عند بدء التشغيل")
+        self.auto_update_checkbox.setObjectName("settings_checkbox")
+        self.auto_update_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.auto_update_checkbox.stateChanged.connect(self._on_settings_changed)
+        settings_layout.addWidget(self.auto_update_checkbox)
+
+        # 5. Manual Update Button
+        self.check_update_btn = QPushButton("البحث عن تحديثات الآن")
+        self.check_update_btn.setObjectName("action_button")
+        self.check_update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.check_update_btn.setFixedSize(200, 45)
+        self.check_update_btn.clicked.connect(self._manual_update_check)
+        
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self.check_update_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        settings_layout.addLayout(btn_layout)
+
         self.main_layout.addWidget(settings_frame)
         self.main_layout.addStretch()
 
     def _load_current_settings(self):
-        # Fetch settings from the JSON manager
         settings = self.view_model.settings.data.get("settings", {})
         tts_enabled = settings.get("tts_enabled", True)
         volume = settings.get("audio_volume", 0.8)
+        logging_enabled = settings.get("logging_enabled", True)
+        auto_update = settings.get("auto_update_enabled", True)
 
-        # Block signals temporarily to avoid saving while loading
         self.tts_checkbox.blockSignals(True)
         self.volume_slider.blockSignals(True)
+        self.logging_checkbox.blockSignals(True)
+        self.auto_update_checkbox.blockSignals(True)
 
         self.tts_checkbox.setChecked(tts_enabled)
         self.volume_slider.setValue(int(volume * 100))
+        self.logging_checkbox.setChecked(logging_enabled)
+        self.auto_update_checkbox.setChecked(auto_update)
 
         self.tts_checkbox.blockSignals(False)
         self.volume_slider.blockSignals(False)
+        self.logging_checkbox.blockSignals(False)
+        self.auto_update_checkbox.blockSignals(False)
         
-        # Apply the initial volume to the audio service
         self.view_model.audio.set_volume(volume)
 
     def _on_settings_changed(self):
-        # Capture UI states and pass them to the ViewModel
         tts_enabled = self.tts_checkbox.isChecked()
         volume = self.volume_slider.value() / 100.0
-        self.view_model.update_settings(tts_enabled, volume)
+        logging_enabled = self.logging_checkbox.isChecked()
+        auto_update = self.auto_update_checkbox.isChecked()
         
-        # Play a test beep when volume changes to give the user audio feedback
+        self.view_model.update_all_settings(tts_enabled, volume, logging_enabled, auto_update)
+        
         if self.sender() == self.volume_slider:
             self.view_model.audio.play_sound("beep")
+            
+        elif self.sender() == self.logging_checkbox:
+            QMessageBox.information(self, "ملاحظة", "تغيير إعدادات السجلات سيبدأ مفعوله عند إعادة تشغيل اللعبة في المرة القادمة.")
+
+    def _manual_update_check(self):
+        self.check_update_btn.setEnabled(False)
+        self.check_update_btn.setText("جاري البحث...")
+        self.view_model.read_text("جاري البحث عن تحديثات.")
+        
+        current_version = os.environ.get("APP_VERSION", "1.0.0")
+        self.checker = UpdateChecker(current_version=current_version)
+        self.checker.update_available.connect(self._on_update_found)
+        self.checker.no_update.connect(self._on_no_update)
+        self.checker.error_occurred.connect(self._on_update_error)
+        self.checker.start()
+
+    def _on_update_found(self, version: str, notes: str, url: str):
+        self._reset_update_btn()
+        dialog = UpdateDialog(new_version=version, release_notes=notes, download_url=url, tts_engine=self.view_model.tts, parent=self)
+        dialog.exec()
+
+    def _on_no_update(self):
+        self._reset_update_btn()
+        self.view_model.read_text("أنت تستخدم أحدث إصدار.")
+        QMessageBox.information(self, "تحديث", "أنت تستخدم بالفعل أحدث إصدار من اللعبة.")
+
+    def _on_update_error(self, error_msg: str):
+        self._reset_update_btn()
+        self.view_model.read_text("حدث خطأ أثناء البحث عن التحديثات.")
+        QMessageBox.warning(self, "خطأ", error_msg)
+
+    def _reset_update_btn(self):
+        self.check_update_btn.setEnabled(True)
+        self.check_update_btn.setText("البحث عن تحديثات الآن")

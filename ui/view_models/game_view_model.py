@@ -32,7 +32,6 @@ class GameViewModel(QObject):
     def get_topics(self, category_id: int):
         return self.db.get_topics_by_category(category_id)
 
-
     def start_round(self, topic_id: int, level: int):
         questions = self.db.get_questions_by_topic_and_level(topic_id, level)
         if not questions:
@@ -55,19 +54,26 @@ class GameViewModel(QObject):
         self.engine.abort_game()
         self.tts.stop()
 
-    # Add this function to save and apply settings
-    def update_settings(self, tts_enabled: bool, volume: float):
+    def update_all_settings(self, tts_enabled: bool, volume: float, logging_enabled: bool, auto_update_enabled: bool):
+        """Updates and saves all user preferences."""
         if "settings" not in self.settings.data:
             self.settings.data["settings"] = {}
             
+        # Update current active instances
+        if hasattr(self.tts, 'enabled'):
+            self.tts.enabled = tts_enabled
+        self.audio.set_volume(volume)
+        
+        # Save to JSON via SettingsManager
         self.settings.data["settings"]["tts_enabled"] = tts_enabled
         self.settings.data["settings"]["audio_volume"] = volume
+        self.settings.data["settings"]["logging_enabled"] = logging_enabled
+        self.settings.data["settings"]["auto_update_enabled"] = auto_update_enabled
         self.settings.save()
         
-        # Apply volume immediately to the audio service
-        self.audio.set_volume(volume)
+        # Log the change
+        logger.info(f"Settings updated -> TTS: {tts_enabled}, Vol: {volume}, Log: {logging_enabled}, AutoUpdate: {auto_update_enabled}")
 
-    # Update this existing function to check the settings before speaking
     def read_text(self, text: str, interrupt: bool = True):
         tts_enabled = self.settings.data.get("settings", {}).get("tts_enabled", True)
         if tts_enabled:
@@ -97,7 +103,6 @@ class GameViewModel(QObject):
         else:
             self.audio.play_sound("wrong")
             self.tts.speak("إجابة خاطئة", interrupt=True)
-
 
     def get_global_stats(self) -> dict:
         """Calculates overall progress across all categories and topics."""
