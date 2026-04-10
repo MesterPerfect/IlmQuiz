@@ -26,7 +26,6 @@ ArchitecturesInstallIn64BitMode=x64compatible arm64
 ; Ensure you have an icon file in your project directory
 ; SetupIconFile=assets\icons\app_icon.ico 
 DefaultDirName={code:GetDefaultDirName}
-
 DisableProgramGroupPage=yes
 DisableDirPage=no
 PrivilegesRequired=admin
@@ -42,12 +41,14 @@ MinVersion=0,6.2
 
 ; Dynamically prevents uninstaller generation and registry writes in Portable mode
 Uninstallable=IsNormalInstall
+UsedUserAreasWarning=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"
 
 [CustomMessages]
+english.AppLNGfile=English
 arabic.AppLNGfile=Arabic
 english.DeleteSettingsPrompt=Do you want to delete the user data and settings folder?
 arabic.DeleteSettingsPrompt=هل تريد حذف مجلد بيانات المستخدم والإعدادات وقاعدة البيانات؟
@@ -79,10 +80,10 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: I
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Check: IsNormalInstall
 
 [UninstallRun]
-Filename: "taskkill"; Parameters: "/F /IM {#MyAppExeName}"; Flags: runhidden
+RunOnceId: "KillIlmQuiz"; Filename: "taskkill"; Parameters: "/F /IM {#MyAppExeName}"; Flags: runhidden
 
 [UninstallDelete]
-Type: filesandordirs; Name: "{pf}\{#MyAppName}"
+Type: filesandordirs; Name: "{commonpf}\{#MyAppName}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
