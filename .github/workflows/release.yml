@@ -200,5 +200,5 @@ jobs:
             artifacts/*.dmg
             artifacts/*.tar.gz
             artifacts/*.deb
-            artifacts/*.exe
+            artifacts/build_installer/*.exe
           generate_release_notes: true
