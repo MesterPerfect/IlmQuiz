@@ -370,3 +370,47 @@ QSlider::handle:horizontal {
     color: #4CAF50; /* Green for correct answer */
     font-weight: bold;
 }
+
+/* About Screen Specifics */
+#about_app_name {
+    font-size: 36px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+#about_section_title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFC107;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+#about_dev_name {
+    font-size: 22px;
+    font-weight: bold;
+    color: #E0E0E0;
+    margin-top: 10px;
+}
+
+#social_button {
+    background-color: #2D2D2D;
+    color: #4CAF50;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#social_button:hover {
+    background-color: #4CAF50;
+    color: #121212;
+}
+
+#social_button:focus {
+    border: 2px solid #FFC107;
+    background-color: #4CAF50;
+    color: #121212;
+}

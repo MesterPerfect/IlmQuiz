@@ -9,6 +9,7 @@ class CategoriesScreen(QWidget):
     category_selected = Signal(int)
     settings_requested = Signal()
     stats_requested = Signal()
+    about_requested = Signal()
 
     def __init__(self, view_model):
         super().__init__()
@@ -32,11 +33,17 @@ class CategoriesScreen(QWidget):
         # Create a header layout for the title and settings button
         header_layout = QHBoxLayout()
 
-        # Settings Button        
+        # Settings Button
         self.settings_btn = QPushButton("الإعدادات")
         self.settings_btn.setObjectName("back_button") # Reusing the style
         self.settings_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.settings_btn.clicked.connect(self.settings_requested.emit)
+
+        # About Button
+        self.about_btn = QPushButton("حول البرنامج")
+        self.about_btn.setObjectName("back_button") # تم التعديل
+        self.about_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.about_btn.clicked.connect(self.about_requested.emit)
 
         # Stats Button
         self.stats_btn = QPushButton("الإحصائيات")
@@ -50,6 +57,7 @@ class CategoriesScreen(QWidget):
         title_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         header_layout.addWidget(self.settings_btn)
+        header_layout.addWidget(self.about_btn)
         header_layout.addWidget(self.stats_btn)
         header_layout.addWidget(title_label, 1)
         layout.addLayout(header_layout)
