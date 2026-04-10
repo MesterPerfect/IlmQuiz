@@ -36,6 +36,14 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Extract App Version
+        id: version
+        shell: bash
+        run: |
+          # Extract version and strictly remove Windows carriage returns (\r)
+          VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION.strip())" | tr -d '\r')
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Upgrade pip and install dependencies
         shell: bash
         run: |
@@ -62,10 +70,10 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Package the build output into a clean ZIP file
+          # Package the build output into a clean ZIP file with version name
           New-Item -ItemType Directory -Path "portable_output\IlmQuiz" -Force | Out-Null
           Copy-Item -Path "dist\IlmQuiz\*" -Destination "portable_output\IlmQuiz" -Recurse -Force
-          Compress-Archive -Path "portable_output\IlmQuiz" -DestinationPath "IlmQuiz_Windows_Portable.zip"
+          Compress-Archive -Path "portable_output\IlmQuiz" -DestinationPath "IlmQuiz_Windows_Portable_v${{ env.APP_VERSION }}.zip"
 
       # ==========================================
       # MACOS: Installer (.dmg) & Portable (.zip)
@@ -75,7 +83,7 @@ jobs:
         shell: bash
         run: |
           # Create a macOS disk image for standard drag-and-drop installation
-          hdiutil create -volname "IlmQuiz" -srcfolder dist/IlmQuiz -ov -format UDZO IlmQuiz_macOS_Installer.dmg
+          hdiutil create -volname "IlmQuiz" -srcfolder dist/IlmQuiz -ov -format UDZO IlmQuiz_macOS_Installer_v${{ env.APP_VERSION }}.dmg
 
       - name: Create macOS Portable (ZIP)
         if: matrix.os == 'macos-latest'
@@ -83,7 +91,7 @@ jobs:
         run: |
           # Create a standard ZIP archive for portable use
           cd dist
-          zip -r ../IlmQuiz_macOS_Portable.zip IlmQuiz/
+          zip -r ../IlmQuiz_macOS_Portable_v${{ env.APP_VERSION }}.zip IlmQuiz/
 
       # ==========================================
       # LINUX: Installer (.deb) & Portable (.tar.gz)
@@ -92,9 +100,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          # 1. Fetch version and strictly remove Windows carriage returns (\r)
-          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION.strip())" | tr -d '\r')
-          
           # Create strict directory structure
           mkdir -p deb_package/opt/IlmQuiz
           mkdir -p deb_package/usr/bin
@@ -126,7 +131,7 @@ jobs:
           # Create DEBIAN control file (Requires an empty line at the end)
           cat <<EOF > deb_package/DEBIAN/control
           Package: ilmquiz
-          Version: ${APP_VERSION}
+          Version: ${{ env.APP_VERSION }}
           Section: games
           Priority: optional
           Architecture: amd64
@@ -136,8 +141,7 @@ jobs:
           EOF
           
           # Build the .deb file safely
-          dpkg-deb --build deb_package IlmQuiz_Linux_Installer.deb
-
+          dpkg-deb --build deb_package IlmQuiz_Linux_Installer_v${{ env.APP_VERSION }}.deb
 
       - name: Create Linux Portable (TAR.GZ)
         if: matrix.os == 'ubuntu-latest'
@@ -145,7 +149,7 @@ jobs:
         run: |
           # Compress the build output into a tarball for Linux portable use
           cd dist
-          tar -czvf ../IlmQuiz_Linux_Portable.tar.gz IlmQuiz/
+          tar -czvf ../IlmQuiz_Linux_Portable_v${{ env.APP_VERSION }}.tar.gz IlmQuiz/
 
       # ==========================================
       # UPLOAD ARTIFACTS
@@ -179,7 +183,7 @@ jobs:
         id: release_info
         run: |
           # Fetch the app version programmatically
-          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION)")
+          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION.strip())" | tr -d '\r')
           
           # Set tag and release names based on user input or automated version
           if [ -n "${{ github.event.inputs.tag_name }}" ]; then
