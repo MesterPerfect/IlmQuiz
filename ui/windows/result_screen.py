@@ -3,10 +3,11 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, Signal
 
 class ResultScreen(QWidget):
-    """Displays the final score, stats, and provides options to share or review."""
+    """Displays the final score, stats, and provides options to share, review, or retry."""
     
     back_requested = Signal()
     review_requested = Signal(list) # Emits the list of mistakes
+    retry_requested = Signal()      # <--- إشارة إعادة المستوى
 
     def __init__(self, view_model):
         super().__init__()
@@ -52,12 +53,17 @@ class ResultScreen(QWidget):
 
         # Buttons
         buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(20)
+        buttons_layout.setSpacing(15)
 
         self.btn_share = QPushButton("مشاركة النتيجة")
         self.btn_share.setObjectName("action_button")
         self.btn_share.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_share.clicked.connect(self._on_share_clicked)
+
+        self.btn_retry = QPushButton("إعادة التحدي")
+        self.btn_retry.setObjectName("action_button")
+        self.btn_retry.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_retry.clicked.connect(self.retry_requested.emit)
 
         self.btn_review = QPushButton("مراجعة الأخطاء")
         self.btn_review.setObjectName("action_button")
@@ -70,6 +76,7 @@ class ResultScreen(QWidget):
         self.btn_home.clicked.connect(self.back_requested.emit)
 
         buttons_layout.addWidget(self.btn_share)
+        buttons_layout.addWidget(self.btn_retry)  # <--- إضافة زر الإعادة هنا
         buttons_layout.addWidget(self.btn_review)
         buttons_layout.addWidget(self.btn_home)
 
@@ -84,15 +91,19 @@ class ResultScreen(QWidget):
         total_questions = stats["max_score"] // POINTS_PER_QUESTION
         correct = stats["correct_count"]
         
-        # Set Title
+        # Set Title & Show/Hide Retry Button
         if stats["is_win"]:
             title_text = "مبروك! لقد نجحت في التحدي"
             if level_unlocked:
                 title_text += "\n(تم فتح مستوى جديد)"
             self.title_label.setStyleSheet("color: #4CAF50;")
+            self.btn_retry.hide() # إخفاء زر الإعادة عند الفوز
+            acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية."
         else:
             title_text = "حظ أوفر في المرة القادمة"
             self.title_label.setStyleSheet("color: #F44336;")
+            self.btn_retry.show() # إظهار الزر ليتيح للاعب المحاولة مجدداً
+            acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية. يمكنك الضغط على إعادة التحدي للمحاولة مجدداً."
             
         self.title_label.setText(title_text)
 
@@ -106,7 +117,6 @@ class ResultScreen(QWidget):
         self.btn_review.setVisible(stats["wrong_count"] > 0)
 
         # Accessibility announcement
-        acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية."
         self.view_model.read_text(acc_text, interrupt=True)
 
     def _on_share_clicked(self):
@@ -122,7 +132,6 @@ class ResultScreen(QWidget):
         QApplication.clipboard().setText(text)
         self.view_model.audio.play_sound("correct")
         self.view_model.read_text("تم نسخ النتيجة للحافظة", interrupt=True)
-
 
     def _on_review_clicked(self):
         self.review_requested.emit(self.current_stats["mistakes"])

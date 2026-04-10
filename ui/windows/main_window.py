@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self.about_screen = AboutScreen(self.view_model)
         self.stats_screen = StatsScreen(self.view_model)
         self.result_screen = ResultScreen(self.view_model)
+        self.result_screen.retry_requested.connect(self._on_retry_requested)
         self.review_screen = ReviewScreen(self.view_model)
         self.game_screen.back_requested.connect(self._show_categories_screen)
 
@@ -114,6 +115,14 @@ class MainWindow(QMainWindow):
         
         self.stacked_widget.setCurrentWidget(self.game_screen)
         self.view_model.read_text("بدأ التحدي.", interrupt=False)
+
+    def _on_retry_requested(self):
+        """Restarts the current topic and level directly."""
+        if self.current_topic is not None and self.current_level is not None:
+            self.view_model.start_round(self.current_topic, self.current_level)
+            self.stacked_widget.setCurrentWidget(self.game_screen)
+            self.view_model.read_text("تم إعادة التحدي. حظاً موفقاً.", interrupt=False)
+
 
     def _on_game_finished(self, stats: dict):
         level_unlocked = False

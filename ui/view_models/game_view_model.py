@@ -1,6 +1,7 @@
 import logging
 from PySide6.QtCore import QObject, Signal
 from core.engine import GameEngine
+import core.constants as const
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class GameViewModel(QObject):
         return self.db.get_topics_by_category(category_id)
 
     def start_round(self, topic_id: int, level: int):
+        const.TIME_PER_QUESTION = self.settings.data.get("settings", {}).get("question_time", 30)
         questions = self.db.get_questions_by_topic_and_level(topic_id, level)
         if not questions:
             self.error_occurred.emit("No questions available for this topic and level.")

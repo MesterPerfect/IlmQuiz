@@ -7,7 +7,7 @@ from services.updater import UpdateChecker
 from ui.windows.update_dialog import UpdateDialog
 
 class SettingsScreen(QWidget):
-    """Screen for configuring user preferences like TTS, Volume, Logging, Updates, and Themes."""
+    """Screen for configuring user preferences like TTS, Volume, Logging, Updates, Themes, Font Size, and Time."""
     
     back_requested = Signal()
 
@@ -85,21 +85,65 @@ class SettingsScreen(QWidget):
         volume_layout.addWidget(self.volume_slider)
         settings_layout.addLayout(volume_layout)
 
-        # 4. Logging Toggle Checkbox
+        # 4. Font Size Slider (80% to 150%)
+        font_layout = QHBoxLayout()
+        font_label = QLabel("حجم خط الأسئلة:")
+        font_label.setObjectName("settings_label")
+        
+        self.font_slider = QSlider(Qt.Orientation.Horizontal)
+        self.font_slider.setMinimum(80)
+        self.font_slider.setMaximum(150)
+        self.font_slider.setSingleStep(10)
+        self.font_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.font_slider.setTickInterval(10)
+        self.font_slider.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.font_slider.valueChanged.connect(self._on_settings_changed)
+        
+        self.font_value_label = QLabel("100%")
+        self.font_value_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 18px;")
+        
+        font_layout.addWidget(font_label)
+        font_layout.addWidget(self.font_slider)
+        font_layout.addWidget(self.font_value_label)
+        settings_layout.addLayout(font_layout)
+
+        # 5. Question Time Slider (10s to 60s)
+        time_layout = QHBoxLayout()
+        time_label = QLabel("وقت السؤال الواحد:")
+        time_label.setObjectName("settings_label")
+        
+        self.time_slider = QSlider(Qt.Orientation.Horizontal)
+        self.time_slider.setMinimum(10)
+        self.time_slider.setMaximum(60)
+        self.time_slider.setSingleStep(5)
+        self.time_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.time_slider.setTickInterval(5)
+        self.time_slider.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.time_slider.valueChanged.connect(self._on_settings_changed)
+        
+        self.time_value_label = QLabel("30 ثانية")
+        self.time_value_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 18px;")
+        
+        time_layout.addWidget(time_label)
+        time_layout.addWidget(self.time_slider)
+        time_layout.addWidget(self.time_value_label)
+        settings_layout.addLayout(time_layout)
+
+        # 6. Logging Toggle Checkbox
         self.logging_checkbox = QCheckBox("تفعيل حفظ السجلات (Logging) للمساعدة في حل المشاكل")
         self.logging_checkbox.setObjectName("settings_checkbox")
         self.logging_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.logging_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.logging_checkbox)
 
-        # 5. Auto Update Toggle Checkbox
+        # 7. Auto Update Toggle Checkbox
         self.auto_update_checkbox = QCheckBox("البحث عن التحديثات تلقائياً عند بدء التشغيل")
         self.auto_update_checkbox.setObjectName("settings_checkbox")
         self.auto_update_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.auto_update_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.auto_update_checkbox)
 
-        # 6. Manual Update Button
+        # 8. Manual Update Button
         self.check_update_btn = QPushButton("البحث عن تحديثات الآن")
         self.check_update_btn.setObjectName("action_button")
         self.check_update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -120,10 +164,14 @@ class SettingsScreen(QWidget):
         logging_enabled = settings.get("logging_enabled", True)
         auto_update = settings.get("auto_update_enabled", True)
         current_theme = settings.get("theme", "dark_theme")
+        font_scale = settings.get("font_scale", 100)
+        question_time = settings.get("question_time", 30)
 
         self.theme_combo.blockSignals(True)
         self.tts_checkbox.blockSignals(True)
         self.volume_slider.blockSignals(True)
+        self.font_slider.blockSignals(True)
+        self.time_slider.blockSignals(True)
         self.logging_checkbox.blockSignals(True)
         self.auto_update_checkbox.blockSignals(True)
 
@@ -134,12 +182,19 @@ class SettingsScreen(QWidget):
 
         self.tts_checkbox.setChecked(tts_enabled)
         self.volume_slider.setValue(int(volume * 100))
+        self.font_slider.setValue(font_scale)
+        self.time_slider.setValue(question_time)
         self.logging_checkbox.setChecked(logging_enabled)
         self.auto_update_checkbox.setChecked(auto_update)
+        
+        self.font_value_label.setText(f"{font_scale}%")
+        self.time_value_label.setText(f"{question_time} ثانية")
 
         self.theme_combo.blockSignals(False)
         self.tts_checkbox.blockSignals(False)
         self.volume_slider.blockSignals(False)
+        self.font_slider.blockSignals(False)
+        self.time_slider.blockSignals(False)
         self.logging_checkbox.blockSignals(False)
         self.auto_update_checkbox.blockSignals(False)
         
@@ -148,11 +203,19 @@ class SettingsScreen(QWidget):
     def _on_settings_changed(self):
         tts_enabled = self.tts_checkbox.isChecked()
         volume = self.volume_slider.value() / 100.0
+        font_scale = self.font_slider.value()
+        question_time = self.time_slider.value()
         logging_enabled = self.logging_checkbox.isChecked()
         auto_update = self.auto_update_checkbox.isChecked()
         selected_theme = self.theme_combo.currentData()
         
-        self.view_model.update_all_settings(tts_enabled, volume, logging_enabled, auto_update, selected_theme)
+        # Update labels dynamically
+        self.font_value_label.setText(f"{font_scale}%")
+        self.time_value_label.setText(f"{question_time} ثانية")
+        
+        self.view_model.update_all_settings(
+            tts_enabled, volume, logging_enabled, auto_update, selected_theme, font_scale, question_time
+        )
         
         if self.sender() == self.volume_slider:
             self.view_model.audio.play_sound("beep")
