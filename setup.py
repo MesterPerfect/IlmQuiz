@@ -63,14 +63,22 @@ def main():
         author="MesterPerfect",
         options={"build_exe": build_exe_options},
         executables=[
+            # 1. The Main Application
             Executable(
                 "main.py",
                 base=base,
                 target_name=target_name,
                 icon=icon_file,
+            ),
+            # 2. The Silent Background Updater
+            Executable(
+                "apply_update.py",
+                base=base,  # Using "gui" base prevents the console window from flashing
+                target_name=f"apply_update{ext}",
             )
         ],
     )
+
 
     clean_unused_folders(build_dir)
 
