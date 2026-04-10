@@ -40,23 +40,20 @@ def main():
         settings_manager=settings_manager
     )
 
-    # Apply the saved theme immediately before showing the window
+    # Apply the saved theme and dynamic font sizes globally
     view_model.apply_theme()
     
     window = MainWindow(view_model)
-
-    try:
-        with open("assets/styles/dark_theme.qss", "r", encoding="utf-8") as f:
-            app.setStyleSheet(f.read())
-        logger.info("Theme 'dark_theme' loaded successfully.")
-    except Exception as e:
-        logger.error(f"Failed to load theme: {e}")
-    
     window.show()
     
     exit_code = app.exec()
     
     logger.info("Application is closing. Cleaning up resources...")
+    
+    # Gracefully shutdown background TTS threads if applicable (Linux/macOS)
+    if hasattr(tts_service, 'shutdown'):
+        tts_service.shutdown()
+        
     sys.exit(exit_code)
 
 if __name__ == "__main__":

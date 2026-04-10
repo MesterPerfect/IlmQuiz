@@ -47,11 +47,12 @@ def main():
         "build_exe": build_dir,
         "optimize": 2,
         "include_files": include_files,
-        # Added 'packaging' to ensure UpdateChecker parses versions correctly
         "packages": ["core", "data", "services", "ui", "packaging"], 
-        "includes": ["PySide6.QtCore", "PySide6.QtWidgets", "PySide6.QtGui", "PySide6.QtMultimedia"],
+        # Added 'ssl' and 'urllib' to ensure the background updater can download via HTTPS safely
+        "includes": ["PySide6.QtCore", "PySide6.QtWidgets", "PySide6.QtGui", "PySide6.QtMultimedia", "ssl", "urllib"],
         "excludes": ["tkinter", "test", "setuptools", "pip", "numpy", "unittest"],
     }
+
 
     # Define icon path
     icon_path = os.path.join("assets", "icons", "app_icon.ico")
