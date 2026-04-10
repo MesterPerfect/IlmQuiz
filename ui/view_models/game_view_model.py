@@ -56,8 +56,9 @@ class GameViewModel(QObject):
         self.engine.abort_game()
         self.tts.stop()
 
-    def update_all_settings(self, tts_enabled: bool, volume: float, logging_enabled: bool, auto_update_enabled: bool, theme: str):
-        """Updates and saves all user preferences."""
+
+    def update_all_settings(self, tts_enabled: bool, volume: float, logging_enabled: bool, auto_update_enabled: bool, theme: str, font_scale: int = 100, question_time: int = 30):
+        """Updates and saves all user preferences including font scale and timer."""
         if "settings" not in self.settings.data:
             self.settings.data["settings"] = {}
             
@@ -65,39 +66,63 @@ class GameViewModel(QObject):
             self.tts.enabled = tts_enabled
         self.audio.set_volume(volume)
         
-        self.settings.data["settings"]["tts_enabled"] = tts_enabled
-        self.settings.data["settings"]["audio_volume"] = volume
-        self.settings.data["settings"]["logging_enabled"] = logging_enabled
-        self.settings.data["settings"]["auto_update_enabled"] = auto_update_enabled
+        s = self.settings.data["settings"]
+        s["tts_enabled"] = tts_enabled
+        s["audio_volume"] = volume
+        s["logging_enabled"] = logging_enabled
+        s["auto_update_enabled"] = auto_update_enabled
+        s["question_time"] = question_time
+        s["font_scale"] = font_scale
         
-        # Check if theme changed to apply it instantly
-        old_theme = self.settings.data["settings"].get("theme", "")
-        self.settings.data["settings"]["theme"] = theme
+        old_theme = s.get("theme", "")
+        old_font = s.get("last_font_scale", 100)
+        s["theme"] = theme
+        s["last_font_scale"] = font_scale
         
         self.settings.save()
         
-        if old_theme != theme:
-            self.apply_theme(theme)
+        # Apply theme instantly if theme or font size changed
+        if old_theme != theme or old_font != font_scale:
+            self.apply_theme(theme, font_scale)
+            
+        # Dynamically update the time limit for the game engine
+        import core.constants as const
+        const.TIME_PER_QUESTION = question_time
         
-        logger.info(f"Settings updated -> TTS: {tts_enabled}, Vol: {volume}, Theme: {theme}")
+        logger.info(f"Settings updated -> TTS: {tts_enabled}, Vol: {volume}, Theme: {theme}, Font: {font_scale}%, Time: {question_time}s")
 
-    def apply_theme(self, theme_name: str = None):
-        """Loads and applies the QSS stylesheet to the entire application."""
+
+
+    def apply_theme(self, theme_name: str = None, font_scale: int = None):
+        """Loads and applies the QSS stylesheet along with dynamic font scaling."""
         import os
         from PySide6.QtWidgets import QApplication
         
         if not theme_name:
             theme_name = self.settings.data.get("settings", {}).get("theme", "dark_theme")
+        if not font_scale:
+            font_scale = self.settings.data.get("settings", {}).get("font_scale", 100)
             
         theme_path = os.path.join("assets", "styles", f"{theme_name}.qss")
         if os.path.exists(theme_path):
             try:
                 with open(theme_path, "r", encoding="utf-8") as f:
                     qss = f.read()
+                    
+                    # --- DYNAMIC FONT SIZING MAGIC ---
+                    scale = font_scale / 100.0
+                    dynamic_qss = f"""
+                    #question_label {{ font-size: {int(36 * scale)}px; }}
+                    #answer_radio {{ font-size: {int(26 * scale)}px; }}
+                    """
+                    # ---------------------------------
+                    
                     app = QApplication.instance()
                     if app:
-                        app.setStyleSheet(qss)
-                logger.info(f"Theme '{theme_name}' applied successfully.")
+                        app.setStyleSheet(qss + dynamic_qss) 
+                
+                # We use the logger explicitly here, so if it fails, it goes to app.log!
+                logger.info(f"Theme '{theme_name}' applied successfully with font scale {font_scale}%.")
             except Exception as e:
                 logger.error(f"Failed to load theme {theme_name}: {e}")
         else:

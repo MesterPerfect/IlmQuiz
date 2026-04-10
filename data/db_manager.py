@@ -106,7 +106,7 @@ class DBManager:
         try:
             cursor = conn.cursor()
             query = """
-            SELECT c.name as cat_name, t.name as topic_name 
+            SELECT c.arabic_name as cat_name, t.name as topic_name 
             FROM topics t
             JOIN categories c ON t.category_id = c.id
             WHERE t.id = ?
