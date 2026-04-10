@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 ArchitecturesAllowed=x64compatible arm64
 ArchitecturesInstallIn64BitMode=x64compatible arm64
 ; Ensure you have an icon file in your project directory
-; SetupIconFile=assets\icons\app_icon.ico 
+SetupIconFile=assets\icons\app_icon.ico
 DefaultDirName={code:GetDefaultDirName}
 DisableProgramGroupPage=yes
 DisableDirPage=no

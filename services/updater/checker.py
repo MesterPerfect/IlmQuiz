@@ -8,7 +8,7 @@ from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger(__name__)
 
-UPDATE_JSON_URL = "https://raw.githubusercontent.com/MesterPerfect/IlmQuiz/main/update.json"
+UPDATE_JSON_URL = "https://raw.githubusercontent.com/MesterPerfect/IlmQuiz/master/update.json"
 
 class UpdateChecker(QThread):
     """

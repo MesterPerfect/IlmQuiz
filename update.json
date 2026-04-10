@@ -2,8 +2,8 @@
   "stable": {
     "version": "1.0.0",
     "release_notes": {
-      "ar": "🎉 **تحديث جديد للعبة IlmQuiz!**\n\n**ما الجديد في هذا الإصدار؟**\n- ✅ إضافة مستويات جديدة لتصنيف الفقه.\n- 🚀 تحسين سرعة اللعبة وتقليل استهلاك الذاكرة.\n- ♿ دعم كامل لقارئ الشاشة (NVDA).\n- 🎨 إضافة ثيم التباين العالي للإعدادات.",
-      "en": "- Added new levels and general improvements.\n- Added High Contrast Theme."
+      "ar": "🎉 **مرحباً بك في الإصدار الرسمي الأول من IlmQuiz (v1.0.0)!**\n\nنحن فخورون بإطلاق هذه اللعبة الثقافية الإسلامية. يتميز هذا الإصدار بـ:\n\n- 🎯 6 تصنيفات متنوعة مع 3 مستويات صعوبة.\n- ♿ دعم كامل وشامل لقارئات الشاشة للمكفوفين (100% Accessible).\n- 🎨 واجهة تفاعلية، وضع ليلي، ووضع تباين عالي.\n- 🔄 نظام تحديث تلقائي ذكي لضمان حصولك على أحدث الميزات دائماً.\n\nشكراً لدعمك، ونتمنى لك وقتاً ممتعاً ومفيداً!",
+      "en": "🎉 **Welcome to the first official release of IlmQuiz (v1.0.0)!**\n\nEnjoy our Islamic knowledge challenge featuring:\n- 🎯 6 categories with 3 difficulty levels.\n- ♿ 100% Screen Reader Accessibility.\n- 🎨 Dark Theme & High Contrast mode.\n- 🔄 Smart Auto-Updater.\n\nThank you for playing!"
     },
     "downloads": {
       "windows": {
