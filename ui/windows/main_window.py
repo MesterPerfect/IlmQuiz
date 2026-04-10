@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 from PySide6.QtCore import QTimer
 
+from .splash_screen import SplashScreen
 from .welcome_screen import WelcomeScreen
 from .categories_screen import CategoriesScreen
 from .settings_screen import SettingsScreen
@@ -30,6 +31,8 @@ class MainWindow(QMainWindow):
         self._init_screens()
 
     def _init_screens(self):
+        # Initialize the splash screen
+        self.splash_screen = SplashScreen(self.view_model)
         self.welcome_screen = WelcomeScreen(self.view_model)
         self.categories_screen = CategoriesScreen(self.view_model)
         self.topics_screen = TopicsScreen(self.view_model)
@@ -43,6 +46,7 @@ class MainWindow(QMainWindow):
         self.game_screen.back_requested.connect(self._show_categories_screen)
 
         # Connect signals
+        self.splash_screen.finished.connect(self._show_welcome_screen)
         self.welcome_screen.start_requested.connect(self._show_categories_screen)
         self.welcome_screen.exit_requested.connect(self.close) # Closes the application
         self.categories_screen.category_selected.connect(self._on_category_selected)
@@ -56,6 +60,7 @@ class MainWindow(QMainWindow):
 
         
         # Result and Review signals
+        self.stacked_widget.addWidget(self.splash_screen)
         self.stacked_widget.addWidget(self.welcome_screen)
         self.stats_screen.back_requested.connect(self._show_categories_screen)
         self.result_screen.back_requested.connect(self._show_categories_screen)
@@ -72,7 +77,11 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.result_screen)
         self.stacked_widget.addWidget(self.review_screen)
 
-        self._show_welcome_screen()
+        self._show_splash_screen()
+
+    def _show_splash_screen(self):
+        self.stacked_widget.setCurrentWidget(self.splash_screen)
+        self.splash_screen.start_animation()
 
     def _show_welcome_screen(self):
         self.stacked_widget.setCurrentWidget(self.welcome_screen)
