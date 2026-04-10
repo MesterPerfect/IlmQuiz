@@ -4,7 +4,8 @@ from PySide6.QtCore import QObject, Signal, QTimer
 from typing import List
 
 from data.models import Question
-from core.constants import TIME_PER_QUESTION, POINTS_PER_QUESTION, WARNING_TIME, PASSING_SCORE
+# Removed TIME_PER_QUESTION import, using DEFAULT_TIME_PER_QUESTION as fallback if needed
+from core.constants import DEFAULT_TIME_PER_QUESTION, POINTS_PER_QUESTION, WARNING_TIME, PASSING_SCORE
 from .state import GameState
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ class GameEngine(QObject):
     time_up = Signal()
     answer_result = Signal(bool, object)
     
-    # New signals for Gamification
+    # Signals for Gamification
     game_over = Signal(dict)
     lives_changed = Signal(int)
     helper_used = Signal(int)
@@ -29,11 +30,13 @@ class GameEngine(QObject):
         self.timer.timeout.connect(self._on_timer_tick)
         self.remaining_time = 0
 
-    def load_questions(self, questions: List[Question], category_name: str, topic_name: str, level: int):
-        self.state.reset(questions)
+    def load_questions(self, questions: List[Question], category_name: str, topic_name: str, level: int, time_limit: int = DEFAULT_TIME_PER_QUESTION):
+        # Pass the customized time_limit to the game state
+        self.state.reset(questions, time_limit)
+        
         # Log detailed info about the loaded round
         logger.info(f"GameEngine loaded {len(self.state.questions)} questions.")
-        logger.info(f"Round Context -> Category: {category_name} | Topic: {topic_name} | Level: {level}")
+        logger.info(f"Round Context -> Category: {category_name} | Topic: {topic_name} | Level: {level} | Time: {time_limit}s")
 
     def start_game(self):
         if not self.state.questions:
@@ -65,8 +68,8 @@ class GameEngine(QObject):
         if not current_q:
             return
 
-        # Track time and count
-        time_taken = TIME_PER_QUESTION - self.remaining_time
+        # Track time and count dynamically based on the state's time limit
+        time_taken = self.state.time_limit - self.remaining_time
         self.state.total_time_taken += time_taken
         self.state.answered_count += 1
 
@@ -85,9 +88,6 @@ class GameEngine(QObject):
             self.lives_changed.emit(self.state.lives)
 
         self.answer_result.emit(is_correct, correct_answer)
-        
-        # Removed the immediate _trigger_game_over() here to allow 
-        # the UI to display the correct answer for 2.5 seconds first.
 
     def advance(self):
         # Check if the player still has lives before loading the next question
@@ -130,7 +130,8 @@ class GameEngine(QObject):
         self.game_over.emit(stats)
 
     def _reset_timer(self):
-        self.remaining_time = TIME_PER_QUESTION
+        # Use dynamic time limit from state instead of the hardcoded constant
+        self.remaining_time = self.state.time_limit
         self.time_updated.emit(self.remaining_time)
         self.timer.start(1000)
 

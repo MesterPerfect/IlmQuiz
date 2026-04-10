@@ -14,8 +14,9 @@ class GameState:
         self.mistakes: List[Tuple[Question, Answer]] = []
         self.total_time_taken: int = 0
         self.answered_count: int = 0
+        self.time_limit: int = 30 # Added dynamic time limit tracking
         
-    def reset(self, questions: List[Question]):
+    def reset(self, questions: List[Question], time_limit: int = 30):
         self.questions = questions
         self.current_index = -1
         self.score = 0
@@ -25,6 +26,7 @@ class GameState:
         self.mistakes.clear()
         self.total_time_taken = 0
         self.answered_count = 0
+        self.time_limit = time_limit # Store the configured time limit
 
     @property
     def current_question(self) -> Optional[Question]:

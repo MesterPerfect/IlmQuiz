@@ -3,9 +3,10 @@ import sys
 import platform
 import shutil
 
+# 1. Define App Version for CI/CD and Updaters
 APP_VERSION = "1.0.0"
 
-# 1. Determine the Base Directory (Read-only for installed apps)
+# 2. Determine the Base Directory (Read-only for installed apps)
 IS_FROZEN = getattr(sys, 'frozen', False)
 
 if IS_FROZEN:
@@ -13,10 +14,10 @@ if IS_FROZEN:
 else:
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-# 2. Check for Portable Mode
+# 3. Check for Portable Mode
 IS_PORTABLE = os.path.exists(os.path.join(BASE_DIR, ".portable"))
 
-# 3. Determine User Data Directory (Read/Write permissions required)
+# 4. Determine User Data Directory (Read/Write permissions required)
 APP_NAME = "IlmQuiz"
 SYSTEM_OS = platform.system()
 
@@ -33,7 +34,7 @@ else:
 # Ensure necessary directories exist
 os.makedirs(os.path.join(USER_DATA_DIR, "logs"), exist_ok=True)
 
-# 4. Define specific file paths
+# 5. Define specific file paths
 if IS_PORTABLE or not IS_FROZEN:
     # In portable or dev mode, deal with the database directly from assets
     DB_PATH = os.path.join(BASE_DIR, "assets", "database", "quiz.db")
@@ -57,8 +58,8 @@ SOUNDS_DIR = os.path.join(BASE_DIR, "assets", "sounds")
 ICONS_DIR = os.path.join(BASE_DIR, "assets", "icons")
 STYLES_DIR = os.path.join(BASE_DIR, "assets", "styles")
 
-# 5. Game Constants
-TIME_PER_QUESTION = 30
+# 6. Game Constants
+DEFAULT_TIME_PER_QUESTION = 30  # Renamed to indicate it's a fallback
 WARNING_TIME = 10
 POINTS_PER_QUESTION = 10
 PASSING_SCORE = 10
