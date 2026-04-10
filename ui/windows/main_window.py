@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
         self._init_screens()
 
     def _init_screens(self):
-        # Initialize the splash screen
+        # 1. Initialize all screens
         self.splash_screen = SplashScreen(self.view_model)
         self.welcome_screen = WelcomeScreen(self.view_model)
         self.categories_screen = CategoriesScreen(self.view_model)
@@ -41,33 +41,39 @@ class MainWindow(QMainWindow):
         self.about_screen = AboutScreen(self.view_model)
         self.stats_screen = StatsScreen(self.view_model)
         self.result_screen = ResultScreen(self.view_model)
-        self.result_screen.retry_requested.connect(self._on_retry_requested)
         self.review_screen = ReviewScreen(self.view_model)
-        self.game_screen.back_requested.connect(self._show_categories_screen)
 
-        # Connect signals
+        # 2. Connect all signals
         self.splash_screen.finished.connect(self._show_welcome_screen)
+        
         self.welcome_screen.start_requested.connect(self._show_categories_screen)
-        self.welcome_screen.exit_requested.connect(self.close) # Closes the application
+        self.welcome_screen.exit_requested.connect(self.close)
+        
         self.categories_screen.category_selected.connect(self._on_category_selected)
         self.categories_screen.settings_requested.connect(self._show_settings_screen)
         self.categories_screen.stats_requested.connect(self._show_stats_screen)
         self.categories_screen.about_requested.connect(self._show_about_screen)
+        
         self.topics_screen.back_requested.connect(self._show_categories_screen)
         self.topics_screen.topic_selected.connect(self._on_topic_selected)
-        self.game_screen.game_finished.connect(self._on_game_finished)
-        self.settings_screen.back_requested.connect(self._show_categories_screen)
-
         
-        # Result and Review signals
-        self.stacked_widget.addWidget(self.splash_screen)
-        self.stacked_widget.addWidget(self.welcome_screen)
+        self.game_screen.back_requested.connect(self._show_categories_screen)
+        self.game_screen.game_finished.connect(self._on_game_finished)
+        
+        self.settings_screen.back_requested.connect(self._show_categories_screen)
+        
         self.stats_screen.back_requested.connect(self._show_categories_screen)
+        self.about_screen.back_requested.connect(self._show_categories_screen)
+        
+        self.result_screen.retry_requested.connect(self._on_retry_requested)
         self.result_screen.back_requested.connect(self._show_categories_screen)
         self.result_screen.review_requested.connect(self._show_review_screen)
+        
         self.review_screen.back_requested.connect(self._show_result_screen)
-        self.about_screen.back_requested.connect(self._show_categories_screen)
 
+        # 3. Add all screens to the stacked widget
+        self.stacked_widget.addWidget(self.splash_screen)
+        self.stacked_widget.addWidget(self.welcome_screen)
         self.stacked_widget.addWidget(self.categories_screen)
         self.stacked_widget.addWidget(self.topics_screen)
         self.stacked_widget.addWidget(self.game_screen)
@@ -77,6 +83,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.result_screen)
         self.stacked_widget.addWidget(self.review_screen)
 
+        # 4. Start the application flow
         self._show_splash_screen()
 
     def _show_splash_screen(self):
@@ -131,7 +138,6 @@ class MainWindow(QMainWindow):
             self.view_model.start_round(self.current_topic, self.current_level)
             self.stacked_widget.setCurrentWidget(self.game_screen)
             self.view_model.read_text("تم إعادة التحدي. حظاً موفقاً.", interrupt=False)
-
 
     def _on_game_finished(self, stats: dict):
         level_unlocked = False

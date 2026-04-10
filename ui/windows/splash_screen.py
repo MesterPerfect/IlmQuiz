@@ -2,6 +2,7 @@ import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGraphicsOpacityEffect
 from PySide6.QtCore import Qt, Signal, QTimer, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QPixmap
+import core.constants as const
 
 class SplashScreen(QWidget):
     """
@@ -26,7 +27,8 @@ class SplashScreen(QWidget):
         self.logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Try to load a logo if exists, otherwise use stylized text
-        logo_path = os.path.join("assets", "images", "logo.png")
+        # Fixed path to use absolute BASE_DIR for frozen compatibility
+        logo_path = os.path.join(const.BASE_DIR, "assets", "images", "logo.png")
         if os.path.exists(logo_path):
             pixmap = QPixmap(logo_path).scaled(
                 200, 200, 
@@ -60,7 +62,6 @@ class SplashScreen(QWidget):
         self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         
         # Play startup sound (Using 'correct' if 'startup' doesn't exist yet)
-        # You can add a specific 'startup.wav' to your sounds folder later
         self.view_model.audio.play_sound("startup") 
         
         self.animation.start()
