@@ -88,8 +88,9 @@ class GameScreen(QWidget):
     def _on_radio_toggled(self, checked, button):
         """Announces selection for screen readers when a radio button is toggled."""
         if checked:
-            # We use interrupt=False to not cut off the question reading if it's still playing
-            self.view_model.read_text("تم الاختيار", interrupt=False)
+            # Combine the text explicitly so the TTS reads them sequentially without overlapping
+            announcement = f"{button.text()}، تَمَّ الِاخْتِيَار"
+            self.view_model.read_text(announcement, interrupt=True)
 
     # ==========================================
     # Event Handlers
@@ -188,12 +189,8 @@ class GameScreen(QWidget):
     def keyPressEvent(self, event):
         key = event.key()
         
-        # Bind Escape key to exit/back logic
-        if key == Qt.Key.Key_Escape:
-            self._on_exit_clicked()
-            
         # Screen reader shortcuts
-        elif key == Qt.Key.Key_T:
+        if key == Qt.Key.Key_T:
             remaining = self.view_model.engine.remaining_time
             self.view_model.read_text(f"الوقت المتبقي {remaining} ثانية", interrupt=True)
             
@@ -217,5 +214,5 @@ class GameScreen(QWidget):
                 logger.error(f"Shortcut S failed: {e}")
                 
         else:
-            # Pass unhandled keys to the parent class
+            # Pass unhandled keys (like Tabs, Arrows) to the parent class
             super().keyPressEvent(event)

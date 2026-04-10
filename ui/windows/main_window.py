@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QShortcut, QKeySequence
 
 from .splash_screen import SplashScreen
 from .welcome_screen import WelcomeScreen
@@ -20,13 +21,18 @@ class MainWindow(QMainWindow):
         self.view_model = view_model
         
         self.setWindowTitle("IlmQuiz - Islamic Knowledge Challenge")
-        self.resize(1000, 750) # Adjusted size for better gameplay view
+        self.resize(1000, 750) 
         
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
         
         self.current_topic = None
         self.current_level = None
+        
+        # --- Global Escape Key Shortcut ---
+        self.esc_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Escape), self)
+        self.esc_shortcut.activated.connect(self._handle_global_escape)
+        # ----------------------------------
         
         self._init_screens()
 
@@ -61,7 +67,6 @@ class MainWindow(QMainWindow):
         self.game_screen.game_finished.connect(self._on_game_finished)
         
         self.settings_screen.back_requested.connect(self._show_categories_screen)
-        
         self.stats_screen.back_requested.connect(self._show_categories_screen)
         self.about_screen.back_requested.connect(self._show_categories_screen)
         
@@ -83,16 +88,41 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.result_screen)
         self.stacked_widget.addWidget(self.review_screen)
 
-        # 4. Start the application flow
         self._show_splash_screen()
 
+    # ==========================================
+    # Global Navigation Handler
+    # ==========================================
+    def _handle_global_escape(self):
+        """Smartly handles the Escape key depending on the currently active screen."""
+        current_widget = self.stacked_widget.currentWidget()
+        
+        if current_widget == self.game_screen:
+            # Game screen has a custom confirmation dialog
+            current_widget._on_exit_clicked()
+            
+        elif current_widget == self.topics_screen:
+            # Topics screen has an internal stack (Levels -> Topics)
+            current_widget._on_back_clicked()
+            
+        elif current_widget == self.categories_screen:
+            # Categories goes back to Welcome screen
+            self._show_welcome_screen()
+            
+        elif hasattr(current_widget, 'back_requested'):
+            # Settings, About, Stats, Review, Result screens all use this signal
+            current_widget.back_requested.emit()
+
+    # ==========================================
+    # Screen Transitions
+    # ==========================================
     def _show_splash_screen(self):
         self.stacked_widget.setCurrentWidget(self.splash_screen)
         self.splash_screen.start_animation()
 
     def _show_welcome_screen(self):
         self.stacked_widget.setCurrentWidget(self.welcome_screen)
-        self.view_model.read_text("شاشة الترحيب. لعبة IlmQuiz. استخدم مفتاح التبويب (Tab) للتنقل.", interrupt=True)
+        self.view_model.read_text("شاشة الترحيب. لعبة IlmQuiz. استخدم مفتاح التبويب للتنقل.", interrupt=True)
 
     def _show_settings_screen(self):
         self.stacked_widget.setCurrentWidget(self.settings_screen)
@@ -125,15 +155,11 @@ class MainWindow(QMainWindow):
     def _on_topic_selected(self, topic_id: int, level: int):
         self.current_topic = topic_id
         self.current_level = level
-        
-        # Ask ViewModel to load data and start engine
         self.view_model.start_round(topic_id, level)
-        
         self.stacked_widget.setCurrentWidget(self.game_screen)
         self.view_model.read_text("بدأ التحدي.", interrupt=False)
 
     def _on_retry_requested(self):
-        """Restarts the current topic and level directly."""
         if self.current_topic is not None and self.current_level is not None:
             self.view_model.start_round(self.current_topic, self.current_level)
             self.stacked_widget.setCurrentWidget(self.game_screen)
@@ -147,9 +173,6 @@ class MainWindow(QMainWindow):
         else:
             self.view_model.audio.play_sound("wrong")
 
-        # Pass data to result screen and show it
         self.result_screen.display_results(stats, level_unlocked)
         self.stacked_widget.setCurrentWidget(self.result_screen)
-        
-        # Refresh topics screen in the background to reflect new unlocked levels
         self.topics_screen._show_levels(self.current_topic, self.topics_screen.title_label.text().replace("موضوع: ", ""))
