@@ -1,5 +1,7 @@
+import os
 import logging
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QApplication
 from core.engine import GameEngine
 import core.constants as const
 
@@ -21,7 +23,7 @@ class GameViewModel(QObject):
         self.audio = audio_service
         self.settings = settings_manager
 
-        # Connect GameEngine signals to internal handlers for audio/tts
+        # Connect GameEngine signals to internal handlers for audio/tts feedback
         self.engine.time_warning.connect(self._handle_time_warning)
         self.engine.time_up.connect(self._handle_time_up)
         self.engine.answer_result.connect(self._handle_answer_result)
@@ -34,16 +36,18 @@ class GameViewModel(QObject):
         return self.db.get_topics_by_category(category_id)
 
     def start_round(self, topic_id: int, level: int):
-        const.TIME_PER_QUESTION = self.settings.data.get("settings", {}).get("question_time", 30)
+        # Fetch the configured time limit from settings (fallback to 30s)
+        time_limit = self.settings.data.get("settings", {}).get("question_time", 30)
+        
         questions = self.db.get_questions_by_topic_and_level(topic_id, level)
         if not questions:
             self.error_occurred.emit("No questions available for this topic and level.")
             return
             
-        # Use the new DB function to get clean names for the logger
         category_name, topic_name = self.db.get_topic_details(topic_id)
         
-        self.engine.load_questions(questions, category_name, topic_name, level)
+        # Pass the customized time_limit to align with the updated GameEngine signature
+        self.engine.load_questions(questions, category_name, topic_name, level, time_limit)
         self.engine.start_game()
 
     def submit_answer(self, answer_id: int):
@@ -55,7 +59,6 @@ class GameViewModel(QObject):
     def stop_game(self):
         self.engine.abort_game()
         self.tts.stop()
-
 
     def update_all_settings(self, tts_enabled: bool, volume: float, logging_enabled: bool, auto_update_enabled: bool, theme: str, font_scale: int = 100, question_time: int = 30):
         """Updates and saves all user preferences including font scale and timer."""
@@ -85,25 +88,18 @@ class GameViewModel(QObject):
         if old_theme != theme or old_font != font_scale:
             self.apply_theme(theme, font_scale)
             
-        # Dynamically update the time limit for the game engine
-        import core.constants as const
-        const.TIME_PER_QUESTION = question_time
-        
         logger.info(f"Settings updated -> TTS: {tts_enabled}, Vol: {volume}, Theme: {theme}, Font: {font_scale}%, Time: {question_time}s")
-
-
 
     def apply_theme(self, theme_name: str = None, font_scale: int = None):
         """Loads and applies the QSS stylesheet along with dynamic font scaling."""
-        import os
-        from PySide6.QtWidgets import QApplication
-        
         if not theme_name:
             theme_name = self.settings.data.get("settings", {}).get("theme", "dark_theme")
         if not font_scale:
             font_scale = self.settings.data.get("settings", {}).get("font_scale", 100)
             
-        theme_path = os.path.join("assets", "styles", f"{theme_name}.qss")
+        # Use absolute base directory for safety in frozen/compiled environments
+        theme_path = os.path.join(const.BASE_DIR, "assets", "styles", f"{theme_name}.qss")
+        
         if os.path.exists(theme_path):
             try:
                 with open(theme_path, "r", encoding="utf-8") as f:
@@ -121,7 +117,6 @@ class GameViewModel(QObject):
                     if app:
                         app.setStyleSheet(qss + dynamic_qss) 
                 
-                # We use the logger explicitly here, so if it fails, it goes to app.log!
                 logger.info(f"Theme '{theme_name}' applied successfully with font scale {font_scale}%.")
             except Exception as e:
                 logger.error(f"Failed to load theme {theme_name}: {e}")
@@ -129,11 +124,7 @@ class GameViewModel(QObject):
             logger.warning(f"Theme file not found: {theme_path}")
 
     def read_text(self, text: str, interrupt: bool = True):
-        tts_enabled = self.settings.data.get("settings", {}).get("tts_enabled", True)
-        if tts_enabled:
-            self.tts.speak(text, interrupt)
-
-    def read_text(self, text: str, interrupt: bool = True):
+        """Reads text aloud using TTS if enabled in settings."""
         tts_enabled = self.settings.data.get("settings", {}).get("tts_enabled", True)
         if tts_enabled:
             self.tts.speak(text, interrupt)
