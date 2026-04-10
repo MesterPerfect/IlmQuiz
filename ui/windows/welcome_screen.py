@@ -1,5 +1,9 @@
+import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
 from PySide6.QtCore import Qt, Signal
+
+from services.updater import UpdateChecker
+from ui.windows.update_dialog import UpdateDialog
 
 class WelcomeScreen(QWidget):
     """Initial screen displayed when the game launches."""
@@ -10,38 +14,36 @@ class WelcomeScreen(QWidget):
     def __init__(self, view_model):
         super().__init__()
         self.view_model = view_model
+        self.checker = None
         self._setup_ui()
+        self._check_for_updates()
 
     def _setup_ui(self):
+        # ... (Keep all your existing UI setup code here exactly as it is) ...
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.main_layout.setSpacing(40)
 
-        # Title
         self.title_label = QLabel("IlmQuiz")
         self.title_label.setObjectName("welcome_title")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        # Subtitle
         self.subtitle_label = QLabel("تحدي المعرفة الإسلامية")
         self.subtitle_label.setObjectName("welcome_subtitle")
         self.subtitle_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.subtitle_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        # Buttons Layout
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.setSpacing(20)
         self.buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Start Button
         self.start_btn = QPushButton("ابدأ التحدي")
         self.start_btn.setObjectName("action_button")
-        self.start_btn.setFixedSize(250, 60) # Fixed size for better look
+        self.start_btn.setFixedSize(250, 60)
         self.start_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.start_btn.clicked.connect(self._on_start_clicked)
 
-        # Exit Button
         self.exit_btn = QPushButton("خروج")
         self.exit_btn.setObjectName("action_button")
         self.exit_btn.setFixedSize(250, 60)
@@ -58,6 +60,23 @@ class WelcomeScreen(QWidget):
         self.main_layout.addStretch()
 
     def _on_start_clicked(self):
-        # Optional: Play a sound when starting
-        # self.view_model.audio.play_sound("correct") 
         self.start_requested.emit()
+
+    def _check_for_updates(self):
+        # Read the current version from environment or default to 1.0.0
+        current_version = os.environ.get("APP_VERSION", "1.0.0")
+        
+        # Start the checker in the background
+        self.checker = UpdateChecker(current_version=current_version)
+        self.checker.update_available.connect(self._show_update_dialog)
+        self.checker.start()
+
+    def _show_update_dialog(self, version: str, notes: str, url: str):
+        dialog = UpdateDialog(
+            new_version=version,
+            release_notes=notes,
+            download_url=url,
+            tts_engine=self.view_model.tts,
+            parent=self
+        )
+        dialog.exec()
