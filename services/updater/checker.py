@@ -2,12 +2,12 @@ import json
 import platform
 import urllib.request
 import logging
+from core.constants import IS_PORTABLE
 from packaging.version import parse as parse_version
 from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger(__name__)
 
-# تم تعديل الرابط ليشير إلى مستودع IlmQuiz الخاص بك
 UPDATE_JSON_URL = "https://raw.githubusercontent.com/MesterPerfect/IlmQuiz/main/update.json"
 
 class UpdateChecker(QThread):
@@ -45,16 +45,23 @@ class UpdateChecker(QThread):
             
             if self._is_newer(latest_version, self.current_version):
                 notes_dict = channel_data.get("release_notes", {})
-                # نجلب الملاحظات باللغة العربية أولاً إن وجدت
-                localized_notes = notes_dict.get(self.current_language, notes_dict.get("en", "تحديث جديد متاح."))
+                # Fetch notes in the preferred language, fallback to English
+                localized_notes = notes_dict.get(self.current_language, notes_dict.get("en", "Update available."))
                 
-                current_os = platform.system().lower() # returns 'windows', 'darwin' (mac), or 'linux'
-                download_url = channel_data.get("downloads", {}).get(current_os, "")
+                current_os = platform.system().lower() # 'windows', 'darwin', or 'linux'
+                os_downloads = channel_data.get("downloads", {}).get(current_os, {})
                 
+                # Fetch the correct URL based on execution mode
+                if IS_PORTABLE:
+                    download_url = os_downloads.get("portable", "")
+                else:
+                    download_url = os_downloads.get("installed", "")
+                    
+                # Emit the signal if a valid URL is found
                 if download_url:
                     self.update_available.emit(latest_version, localized_notes, download_url)
                 else:
-                    self.error_occurred.emit("لم يتم العثور على ملف تحديث مناسب لنظام التشغيل الخاص بك.")
+                    self.error_occurred.emit("لم يتم العثور على ملف تحديث مناسب لنظام التشغيل أو نوع النسخة الخاص بك.")
             else:
                 self.no_update.emit()
                 

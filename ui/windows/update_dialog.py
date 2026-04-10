@@ -162,6 +162,21 @@ class UpdateDialog(QDialog):
     def _launch_update_file(self, file_path: str):
         import subprocess
         
+        # 1. Handle Inno Setup (.exe) for Windows Installed Mode
+        if file_path.lower().endswith('.exe'):
+            # Run the Inno Setup installer silently. 
+            # It will auto-close the current app and restart it.
+            args = [
+                file_path,
+                "/VERYSILENT",        # No UI at all
+                "/SUPPRESSMSGBOXES",  # Auto-click "Yes" to any prompts
+                "/CLOSEAPPLICATIONS", # Force close IlmQuiz.exe
+                "/RESTARTAPPLICATIONS" # Restart after install
+            ]
+            subprocess.Popen(args)
+            return
+
+        # 2. Handle Zip/Tar Archives for Portable / Mac / Linux Mode
         if getattr(sys, 'frozen', False):
             target_dir = os.path.dirname(sys.executable)
             main_exe = os.path.basename(sys.executable)
@@ -182,7 +197,7 @@ class UpdateDialog(QDialog):
                     subprocess.Popen(args, start_new_session=True)
             else:
                 logger.error("Updater executable not found. Unable to self-update.")
-                QMessageBox.warning(self, "خطأ", "ملف المُحدّث غير موجود.")
+                QMessageBox.warning(self, "خطأ", "ملف المُحدّث التلقائي غير موجود.")
         else:
             QMessageBox.information(
                 self, "وضع المطور", 
