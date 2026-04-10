@@ -35,7 +35,8 @@ class MacOSTTS(BaseTTS):
         self.worker_thread = threading.Thread(target=self._process_queue, daemon=True)
         self.worker_thread.start()
 
-    def speak(self, text: str, interrupt: bool = False):
+    # FIXED: Changed interrupt default to True to match BaseTTS and cross-platform behavior
+    def speak(self, text: str, interrupt: bool = True):
         if interrupt:
             self.stop()
             with self.speech_queue.mutex:
@@ -58,7 +59,7 @@ class MacOSTTS(BaseTTS):
             except Exception:
                 pass
                 
-        # 2. Terminate the 'say' process if it is currently running
+        # 2. Terminate the active process (say or osascript) if running
         if self.current_process and self.current_process.poll() is None:
             try:
                 self.current_process.terminate()
@@ -91,23 +92,24 @@ class MacOSTTS(BaseTTS):
                 elif not self.has_appscript and self._is_voiceover_running_cmd():
                     escaped_text = text.replace('\\', '\\\\').replace('"', '\\"')
                     script = f'tell application "VoiceOver" to output "{escaped_text}"'
-                    subprocess.run(
+                    
+                    # FIXED: Use Popen instead of run() so it can be terminated by stop() if interrupted
+                    self.current_process = subprocess.Popen(
                         ['osascript', '-e', script], 
-                        check=True, capture_output=True, text=True
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                     )
+                    self.current_process.wait()
                     
                 # Approach 3: Fallback to native 'say' command
                 else:
                     self.current_process = subprocess.Popen(['say', text])
                     self.current_process.wait()
                     
-            except subprocess.CalledProcessError as e:
-                logger.debug(f"macOS osascript failed, falling back to 'say'. Error: {e.stderr}")
+            except Exception as e:
+                # General fallback to 'say' if osascript fails unexpectedly
+                logger.debug(f"macOS TTS approach failed, falling back to 'say'. Error: {e}")
                 self.current_process = subprocess.Popen(['say', text])
                 self.current_process.wait()
-                
-            except Exception as e:
-                logger.error(f"macOS TTS error processing queue: {e}")
             
             self.speech_queue.task_done()
 
