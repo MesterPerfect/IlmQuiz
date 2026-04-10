@@ -120,8 +120,10 @@ class GameScreen(QWidget):
         self.question_label.setFocus()
 
         # Apply smooth fade-in transition using the effects utility
-        apply_fade(self.question_label, start=0.0, end=1.0)
-        apply_fade(self.answers_frame, start=0.0, end=1.0)
+        # FIX: Allow the layout engine 50ms to recalculate word-wrap geometries 
+        # before applying the opacity effect to prevent QPainter crashes.
+        QTimer.singleShot(50, lambda: apply_fade(self.question_label, start=0.0, end=1.0))
+        QTimer.singleShot(50, lambda: apply_fade(self.answers_frame, start=0.0, end=1.0))
 
     def _on_helper_clicked(self):
         self.view_model.engine.use_helper()
