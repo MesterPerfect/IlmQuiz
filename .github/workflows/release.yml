@@ -34,7 +34,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Upgrade pip and install dependencies
         shell: bash
@@ -92,9 +92,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          # Create a standard Debian/Ubuntu package structure
-          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION)")
+          # 1. Fetch version and strictly remove Windows carriage returns (\r)
+          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION.strip())" | tr -d '\r')
           
+          # Create strict directory structure
           mkdir -p deb_package/opt/IlmQuiz
           mkdir -p deb_package/usr/bin
           mkdir -p deb_package/usr/share/applications
@@ -104,13 +105,15 @@ jobs:
           cp -r dist/IlmQuiz/* deb_package/opt/IlmQuiz/
           chmod +x deb_package/opt/IlmQuiz/IlmQuiz
           
-          # Create executable symlink wrapper
-          echo '#!/bin/bash' > deb_package/usr/bin/ilmquiz
-          echo '/opt/IlmQuiz/IlmQuiz "$@"' >> deb_package/usr/bin/ilmquiz
+          # Create executable symlink wrapper (Using 'EOF' to prevent variable expansion)
+          cat <<'EOF' > deb_package/usr/bin/ilmquiz
+          #!/bin/bash
+          /opt/IlmQuiz/IlmQuiz "$@"
+          EOF
           chmod +x deb_package/usr/bin/ilmquiz
           
           # Create Desktop Entry for app menu
-          cat <<EOF > deb_package/usr/share/applications/ilmquiz.desktop
+          cat <<'EOF' > deb_package/usr/share/applications/ilmquiz.desktop
           [Desktop Entry]
           Name=IlmQuiz
           Comment=Islamic Knowledge Challenge
@@ -120,7 +123,7 @@ jobs:
           Categories=Education;Game;
           EOF
           
-          # Create DEBIAN control file
+          # Create DEBIAN control file (Requires an empty line at the end)
           cat <<EOF > deb_package/DEBIAN/control
           Package: ilmquiz
           Version: ${APP_VERSION}
@@ -129,10 +132,12 @@ jobs:
           Architecture: amd64
           Maintainer: MesterPerfect
           Description: IlmQuiz - Islamic Knowledge Challenge
+          
           EOF
           
-          # Build the .deb file
+          # Build the .deb file safely
           dpkg-deb --build deb_package IlmQuiz_Linux_Installer.deb
+
 
       - name: Create Linux Portable (TAR.GZ)
         if: matrix.os == 'ubuntu-latest'
