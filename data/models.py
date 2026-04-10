@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 @dataclass
@@ -15,7 +15,8 @@ class Question:
     level: int
     question: str
     link: Optional[str]
-    answers: List[Answer] = None
+    # Use default_factory to safely initialize an empty list instead of None
+    answers: List[Answer] = field(default_factory=list)
 
 @dataclass
 class Topic:

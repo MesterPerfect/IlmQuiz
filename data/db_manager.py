@@ -21,7 +21,6 @@ class DBManager:
             return None
 
     def get_all_categories(self) -> List[Category]:
-        # Retrieve all categories from the database
         categories = []
         conn = self._get_connection()
         if not conn: return categories
@@ -39,7 +38,6 @@ class DBManager:
         return categories
 
     def get_topics_by_category(self, category_id: int) -> List[Topic]:
-        # Retrieve topics filtered by category ID
         topics = []
         conn = self._get_connection()
         if not conn: return topics
@@ -57,43 +55,51 @@ class DBManager:
         return topics
 
     def get_questions_by_topic_and_level(self, topic_id: int, level: int, limit: int = 20) -> List[Question]:
-        # Retrieve random questions based on topic and difficulty level
         questions = []
         conn = self._get_connection()
         if not conn: return questions
 
         try:
             cursor = conn.cursor()
-            # Select random questions (ORDER BY RANDOM()) with the specified limit
+            
+            # 1. Fetch random questions within the limit
             query = "SELECT * FROM questions WHERE topic_id = ? AND level = ? ORDER BY RANDOM() LIMIT ?"
             cursor.execute(query, (topic_id, level, limit))
             rows = cursor.fetchall()
             
-            for row in rows:
-                question_obj = Question(**dict(row))
-                # Fetch and attach answers for each question
-                question_obj.answers = self._get_answers_for_question(cursor, question_obj.id)
-                questions.append(question_obj)
-        except sqlite3.Error as e:
-            logger.error(f"Error fetching questions: {e}")
-        finally:
-            conn.close()
-        return questions
+            if not rows:
+                return questions
 
-    def _get_answers_for_question(self, cursor: sqlite3.Cursor, question_id: str) -> List[Answer]:
-        # Internal helper to fetch answers for a specific question ID
-        answers = []
-        try:
-            cursor.execute("SELECT * FROM answers WHERE question_id = ?", (question_id,))
-            rows = cursor.fetchall()
+            # Map questions by ID for O(1) fast lookup later
+            questions_dict = {}
             for row in rows:
-                # Convert is_correct from integer (0/1) to boolean
+                q_obj = Question(**dict(row))
+                questions_dict[q_obj.id] = q_obj
+                questions.append(q_obj)
+
+            # 2. Extract all question IDs to fetch answers in ONE single query (Resolves N+1 Query Problem)
+            question_ids = list(questions_dict.keys())
+            placeholders = ",".join("?" * len(question_ids))
+            
+            answers_query = f"SELECT * FROM answers WHERE question_id IN ({placeholders})"
+            cursor.execute(answers_query, question_ids)
+            
+            # Map answers to their respective questions
+            for row in cursor.fetchall():
                 data = dict(row)
                 data['is_correct'] = bool(data['is_correct'])
-                answers.append(Answer(**data))
+                ans_obj = Answer(**data)
+                
+                # Append the answer safely to the correct question
+                if ans_obj.question_id in questions_dict:
+                    questions_dict[ans_obj.question_id].answers.append(ans_obj)
+                    
         except sqlite3.Error as e:
-            logger.error(f"Error fetching answers for question {question_id}: {e}")
-        return answers
+            logger.error(f"Error fetching questions and answers: {e}")
+        finally:
+            conn.close()
+            
+        return questions
 
     def get_topic_details(self, topic_id: int) -> Tuple[str, str]:
         """
