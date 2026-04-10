@@ -63,6 +63,7 @@ class GameScreen(QWidget):
             rb = QRadioButton("")
             rb.setObjectName("answer_radio")
             rb.setCursor(Qt.CursorShape.PointingHandCursor)
+            rb.toggled.connect(lambda checked, b=rb: self._on_radio_toggled(checked, b))
             self.answer_group.addButton(rb, i)
             self.answers_layout.addWidget(rb)
             self.radio_buttons.append(rb)
@@ -83,6 +84,12 @@ class GameScreen(QWidget):
         engine.helper_used.connect(self._on_helper_used)
         engine.answer_result.connect(self._on_answer_result)
         engine.game_over.connect(self._on_game_over)
+
+    def _on_radio_toggled(self, checked, button):
+        """Announces selection for screen readers when a radio button is toggled."""
+        if checked:
+            # We use interrupt=False to not cut off the question reading if it's still playing
+            self.view_model.read_text("تم الاختيار", interrupt=False)
 
     # ==========================================
     # Event Handlers
@@ -108,6 +115,9 @@ class GameScreen(QWidget):
         self.bottom_bar.set_submit_enabled(True)
         self.bottom_bar.set_helper_enabled(not self.view_model.engine.state.helper_used)
         
+        # Accessibility: Move focus to the question label automatically
+        self.question_label.setFocus()
+
         # Apply smooth fade-in transition using the effects utility
         apply_fade(self.question_label, start=0.0, end=1.0)
         apply_fade(self.answers_frame, start=0.0, end=1.0)
@@ -177,24 +187,35 @@ class GameScreen(QWidget):
 
     def keyPressEvent(self, event):
         key = event.key()
-        if key == Qt.Key.Key_T:
+        
+        # Bind Escape key to exit/back logic
+        if key == Qt.Key.Key_Escape:
+            self._on_exit_clicked()
+            
+        # Screen reader shortcuts
+        elif key == Qt.Key.Key_T:
             remaining = self.view_model.engine.remaining_time
             self.view_model.read_text(f"الوقت المتبقي {remaining} ثانية", interrupt=True)
+            
         elif key == Qt.Key.Key_H:
             lives = self.view_model.engine.state.lives
             lives_msg = "لديك ثلاثة قلوب" if lives == 3 else "لديك قلبان" if lives == 2 else "لديك قلب واحد" if lives == 1 else "لا يوجد لديك قلوب"
             self.view_model.read_text(lives_msg, interrupt=True)
+            
         elif key == Qt.Key.Key_A:
             question = self.view_model.engine.state.current_question
-            if question: self.view_model.read_text(question.question, interrupt=True)
+            if question: 
+                self.view_model.read_text(question.question, interrupt=True)
+                
         elif key == Qt.Key.Key_S:
             try:
                 state = self.view_model.engine.state
-                # FIXED: Corrected attribute from current_question_index to current_index
                 current = state.current_index + 1  
                 total = len(state.questions)
                 self.view_model.read_text(f"السؤال {current} من {total}. المتبقي {total - current} أسئلة.", interrupt=True)
             except Exception as e: 
                 logger.error(f"Shortcut S failed: {e}")
+                
         else:
+            # Pass unhandled keys to the parent class
             super().keyPressEvent(event)
