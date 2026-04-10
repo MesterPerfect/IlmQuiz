@@ -12,12 +12,17 @@ class SettingsManager:
     """
     def __init__(self, filepath: str = SETTINGS_PATH):
         self.filepath = filepath
+        
+        # Added UI and Game defaults to ensure the app initializes correctly for new users
         self.data = {
             "settings": {
                 "tts_enabled": True,
                 "audio_volume": 0.8,
                 "logging_enabled": True,
-                "auto_update_enabled": True
+                "auto_update_enabled": True,
+                "theme": "dark_theme",
+                "font_scale": 100,
+                "question_time": 30
             },
             "progress": {} 
         }
@@ -29,13 +34,15 @@ class SettingsManager:
             try:
                 with open(self.filepath, "r", encoding="utf-8") as f:
                     file_data = json.load(f)
+                    
                     # Update default dict with loaded data
                     if "progress" in file_data:
                         self.data["progress"].update(file_data["progress"])
                     if "settings" in file_data:
                         self.data["settings"].update(file_data["settings"])
             except Exception as e:
-                print(f"Failed to load settings: {e}")
+                # Replaced print with proper logging
+                logger.error(f"Failed to load settings from {self.filepath}: {e}")
 
     def save(self):
         """Saves current data to the JSON file."""
@@ -44,7 +51,8 @@ class SettingsManager:
             with open(self.filepath, "w", encoding="utf-8") as f:
                 json.dump(self.data, f, indent=4, ensure_ascii=False)
         except Exception as e:
-            print(f"Failed to save settings: {e}")
+            # Replaced print with proper logging
+            logger.error(f"Failed to save settings to {self.filepath}: {e}")
 
     def get_unlocked_level(self, topic_id: int) -> int:
         """Returns the highest unlocked level for a specific topic (1=Easy, 2=Medium, 3=Hard)."""
@@ -58,7 +66,7 @@ class SettingsManager:
         
         next_level = completed_level + 1
         
-        # Changed 3 to 4 to track full completion (level 4 means all 3 levels are done)
+        # 4 means all 3 levels are completed
         if next_level > current_unlocked and next_level <= 4:
             self.data["progress"][topic_str] = next_level
             self.save()

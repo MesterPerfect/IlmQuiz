@@ -19,7 +19,6 @@ class AudioService:
 
     def _init_effects(self):
         # Define the expected sound files
-        # You need to place these .wav files in the assets/sounds directory
         sound_files = {
             "correct": "correct.wav",
             "wrong": "wrong.wav",
@@ -28,7 +27,8 @@ class AudioService:
         }
 
         for name, filename in sound_files.items():
-            file_path = os.path.join(self.sounds_dir, filename)
+            # Convert to absolute path to ensure QtMultimedia finds it reliably
+            file_path = os.path.abspath(os.path.join(self.sounds_dir, filename))
             effect = QSoundEffect()
             
             # Check if file exists to avoid silent runtime errors
