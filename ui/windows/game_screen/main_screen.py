@@ -1,17 +1,18 @@
 import logging
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QRadioButton, QPushButton, QButtonGroup, QFrame,
-                               QProgressBar, QMessageBox, QGraphicsOpacityEffect,
-                               QGraphicsDropShadowEffect)
-from PySide6.QtCore import Qt, Signal, QTimer, QPropertyAnimation, QPoint, QEasingCurve
-from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QRadioButton, 
+                               QButtonGroup, QFrame, QProgressBar, QMessageBox)
+from PySide6.QtCore import Qt, Signal, QTimer
+
+# Import our newly abstracted components and effects
+from ui.windows.game_screen.components import TopBarWidget, BottomBarWidget
+from ui.utils.effects import apply_fade, apply_shake, apply_glow, clear_effects
 
 logger = logging.getLogger(__name__)
 
 class GameScreen(QWidget):
     """
-    Main gameplay screen. Displays questions, handles answers, 
-    and incorporates rich visual feedback (Animations, Glow, Shake).
+    Main gameplay screen (Refactored). 
+    Orchestrates the TopBar, Question Area, BottomBar, and View Model logic.
     """
     game_finished = Signal(dict) 
     back_requested = Signal() 
@@ -19,7 +20,6 @@ class GameScreen(QWidget):
     def __init__(self, view_model):
         super().__init__()
         self.view_model = view_model
-        self._animations = [] # Store animations to prevent garbage collection
         self._setup_ui()
         self._connect_signals()
 
@@ -28,32 +28,10 @@ class GameScreen(QWidget):
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.main_layout.setSpacing(20)
 
-        # 1. Top Bar
-        self.top_bar = QHBoxLayout()
-        
-        self.exit_btn = QPushButton("خروج")
-        self.exit_btn.setObjectName("back_button")
-        self.exit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.exit_btn.clicked.connect(self._on_exit_clicked)
-        
-        self.timer_label = QLabel("الوقت: 30")
-        self.timer_label.setObjectName("timer_label")
-        
-        self.counter_label = QLabel("السؤال: 1 من 20")
-        self.counter_label.setObjectName("counter_label")
-        
-        self.lives_label = QLabel("القلوب: ❤️❤️❤️")
-        self.lives_label.setObjectName("lives_label")
-        
-        self.top_bar.addWidget(self.exit_btn)
-        self.top_bar.addStretch()
-        self.top_bar.addWidget(self.timer_label)
-        self.top_bar.addStretch()
-        self.top_bar.addWidget(self.counter_label)
-        self.top_bar.addStretch()
-        self.top_bar.addWidget(self.lives_label)
-        
-        self.main_layout.addLayout(self.top_bar)
+        # 1. Top Bar Component
+        self.top_bar = TopBarWidget()
+        self.top_bar.exit_requested.connect(self._on_exit_clicked)
+        self.main_layout.addWidget(self.top_bar)
 
         # 2. Progress Bar
         self.progress_bar = QProgressBar()
@@ -91,88 +69,26 @@ class GameScreen(QWidget):
             
         self.main_layout.addWidget(self.answers_frame, stretch=2)
 
-        # 5. Bottom Bar
-        self.bottom_bar = QHBoxLayout()
-        
-        self.helper_btn = QPushButton("مساعدة 50/50")
-        self.helper_btn.setObjectName("helper_button")
-        self.helper_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.helper_btn.clicked.connect(self._on_helper_clicked)
-        
-        self.submit_btn = QPushButton("تأكيد الإجابة")
-        self.submit_btn.setObjectName("submit_button")
-        self.submit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.submit_btn.clicked.connect(self._on_submit_clicked)
-        
-        self.bottom_bar.addWidget(self.helper_btn)
-        self.bottom_bar.addStretch()
-        self.bottom_bar.addWidget(self.submit_btn)
-        
-        self.main_layout.addLayout(self.bottom_bar)
+        # 5. Bottom Bar Component
+        self.bottom_bar = BottomBarWidget()
+        self.bottom_bar.helper_requested.connect(self._on_helper_clicked)
+        self.bottom_bar.submit_requested.connect(self._on_submit_clicked)
+        self.main_layout.addWidget(self.bottom_bar)
 
     def _connect_signals(self):
         engine = self.view_model.engine
         engine.question_changed.connect(self._on_question_changed)
-        engine.time_updated.connect(self._on_time_updated)
-        engine.lives_changed.connect(self._on_lives_changed)
+        engine.time_updated.connect(self.top_bar.update_timer)
+        engine.lives_changed.connect(self.top_bar.update_lives)
         engine.helper_used.connect(self._on_helper_used)
         engine.answer_result.connect(self._on_answer_result)
         engine.game_over.connect(self._on_game_over)
 
     # ==========================================
-    # Animation & Effects Helpers
-    # ==========================================
-    def _fade_in_widget(self, widget, duration=400):
-        """Applies a smooth fade-in effect to a widget."""
-        effect = QGraphicsOpacityEffect(widget)
-        widget.setGraphicsEffect(effect)
-        
-        anim = QPropertyAnimation(effect, b"opacity")
-        anim.setDuration(duration)
-        anim.setStartValue(0.0)
-        anim.setEndValue(1.0)
-        anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
-        anim.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
-        self._animations.append(anim)
-
-    def _shake_widget(self, widget):
-        """Applies a quick left-right shake effect."""
-        anim = QPropertyAnimation(widget, b"pos")
-        anim.setDuration(400)
-        anim.setLoopCount(1)
-        
-        # Save original position
-        pos = widget.pos()
-        x, y = pos.x(), pos.y()
-        
-        anim.setKeyValueAt(0, QPoint(x, y))
-        anim.setKeyValueAt(0.1, QPoint(x - 10, y))
-        anim.setKeyValueAt(0.3, QPoint(x + 10, y))
-        anim.setKeyValueAt(0.5, QPoint(x - 10, y))
-        anim.setKeyValueAt(0.7, QPoint(x + 10, y))
-        anim.setKeyValueAt(0.9, QPoint(x - 5, y))
-        anim.setKeyValueAt(1.0, QPoint(x, y))
-        
-        anim.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
-        self._animations.append(anim)
-
-    def _glow_widget(self, widget, color_hex):
-        """Applies a glowing drop-shadow effect."""
-        effect = QGraphicsDropShadowEffect(widget)
-        effect.setColor(QColor(color_hex))
-        effect.setBlurRadius(30)
-        effect.setOffset(0, 0)
-        widget.setGraphicsEffect(effect)
-
-    def _clear_effects(self, widget):
-        """Removes any graphical effects from a widget."""
-        widget.setGraphicsEffect(None)
-
-    # ==========================================
     # Event Handlers
     # ==========================================
     def _on_question_changed(self, question, current_idx, total):
-        self.counter_label.setText(f"السؤال: {current_idx} من {total}")
+        self.top_bar.update_counter(current_idx, total)
         self.question_label.setText(question.question)
         
         percent = int((current_idx / total) * 100)
@@ -186,43 +102,27 @@ class GameScreen(QWidget):
             rb.setChecked(False)
             rb.setProperty("answer_id", ans.id)
             rb.setStyleSheet("") 
-            self._clear_effects(rb) # Clear previous glow effects
+            clear_effects(rb)
         self.answer_group.setExclusive(True)
         
-        self.submit_btn.setEnabled(True)
-        self.helper_btn.setEnabled(not self.view_model.engine.state.helper_used)
+        self.bottom_bar.set_submit_enabled(True)
+        self.bottom_bar.set_helper_enabled(not self.view_model.engine.state.helper_used)
         
-        # Apply smooth fade-in transition
-        self._fade_in_widget(self.question_label)
-        self._fade_in_widget(self.answers_frame)
-
-    def _on_time_updated(self, remaining):
-        self.timer_label.setText(f"الوقت: {remaining}")
-        # Pulse timer red if low time
-        if remaining <= 5:
-            self.timer_label.setStyleSheet("color: #F44336; font-weight: bold;")
-        else:
-            self.timer_label.setStyleSheet("")
-
-    def _on_lives_changed(self, lives):
-        hearts = "❤️" * lives
-        self.lives_label.setText(f"القلوب: {hearts}")
-        # Shake the lives label to emphasize the loss
-        if lives < 3:
-            self._shake_widget(self.lives_label)
-            self._glow_widget(self.lives_label, "#F44336") # Red glow
-            QTimer.singleShot(1000, lambda: self._clear_effects(self.lives_label))
+        # Apply smooth fade-in transition using the effects utility
+        apply_fade(self.question_label, start=0.0, end=1.0)
+        apply_fade(self.answers_frame, start=0.0, end=1.0)
 
     def _on_helper_clicked(self):
         self.view_model.engine.use_helper()
 
     def _on_helper_used(self, hidden_answer_id):
-        self.helper_btn.setEnabled(False)
+        self.bottom_bar.set_helper_enabled(False)
         self.view_model.read_text("تم حذف إجابة خاطئة.", interrupt=True)
         
         for rb in self.radio_buttons:
             if rb.property("answer_id") == hidden_answer_id:
-                self._fade_in_widget(rb, duration=800) # Fade out effect visually
+                # Fixed Flicker Bug: Smoothly fade OUT to 30% opacity instead of restarting from 0
+                apply_fade(rb, start=1.0, end=0.3, duration=800) 
                 rb.setEnabled(False)
                 rb.setText("--- محذوف ---")
                 rb.setStyleSheet("color: #555555;")
@@ -234,8 +134,8 @@ class GameScreen(QWidget):
             self.view_model.read_text("الرجاء اختيار إجابة لتأكيدها.", interrupt=True)
             return
             
-        self.submit_btn.setEnabled(False)
-        self.helper_btn.setEnabled(False)
+        self.bottom_bar.set_submit_enabled(False)
+        self.bottom_bar.set_helper_enabled(False)
         
         answer_id = checked_btn.property("answer_id")
         self.view_model.submit_answer(answer_id)
@@ -249,12 +149,12 @@ class GameScreen(QWidget):
             # Highlight correct answer with Green + Glow
             if rb.property("answer_id") == correct_answer.id:
                 rb.setStyleSheet("color: #4CAF50; font-weight: bold; border: 2px solid #4CAF50;") 
-                self._glow_widget(rb, "#4CAF50")
+                apply_glow(rb, "#4CAF50")
                 
             # Shake and mark wrong answer Red
             elif rb == checked_btn and not is_correct:
                 rb.setStyleSheet("color: #F44336; text-decoration: line-through; border: 2px solid #F44336;") 
-                self._shake_widget(rb)
+                apply_shake(rb)
                 
         QTimer.singleShot(2500, self.view_model.advance_game)
 
@@ -290,9 +190,11 @@ class GameScreen(QWidget):
         elif key == Qt.Key.Key_S:
             try:
                 state = self.view_model.engine.state
-                current = state.current_question_index + 1
+                # FIXED: Corrected attribute from current_question_index to current_index
+                current = state.current_index + 1  
                 total = len(state.questions)
                 self.view_model.read_text(f"السؤال {current} من {total}. المتبقي {total - current} أسئلة.", interrupt=True)
-            except Exception: pass
+            except Exception as e: 
+                logger.error(f"Shortcut S failed: {e}")
         else:
             super().keyPressEvent(event)
