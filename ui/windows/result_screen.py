@@ -2,12 +2,15 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                                QLabel, QFrame, QApplication, QGridLayout)
 from PySide6.QtCore import Qt, Signal
 
+# Import constants globally to avoid inline import overhead
+import core.constants as const
+
 class ResultScreen(QWidget):
     """Displays the final score, stats, and provides options to share, review, or retry."""
     
     back_requested = Signal()
     review_requested = Signal(list) # Emits the list of mistakes
-    retry_requested = Signal()      # <--- إشارة إعادة المستوى
+    retry_requested = Signal()      # Signal to restart the level
 
     def __init__(self, view_model):
         super().__init__()
@@ -76,7 +79,7 @@ class ResultScreen(QWidget):
         self.btn_home.clicked.connect(self.back_requested.emit)
 
         buttons_layout.addWidget(self.btn_share)
-        buttons_layout.addWidget(self.btn_retry)  # <--- إضافة زر الإعادة هنا
+        buttons_layout.addWidget(self.btn_retry)
         buttons_layout.addWidget(self.btn_review)
         buttons_layout.addWidget(self.btn_home)
 
@@ -86,9 +89,8 @@ class ResultScreen(QWidget):
         """Populates the UI with game statistics."""
         self.current_stats = stats
         
-        # Calculate questions count instead of points
-        from core.constants import POINTS_PER_QUESTION
-        total_questions = stats["max_score"] // POINTS_PER_QUESTION
+        # Calculate questions count using the global constant
+        total_questions = stats["max_score"] // const.POINTS_PER_QUESTION
         correct = stats["correct_count"]
         
         # Set Title & Show/Hide Retry Button
@@ -97,38 +99,38 @@ class ResultScreen(QWidget):
             if level_unlocked:
                 title_text += "\n(تم فتح مستوى جديد)"
             self.title_label.setStyleSheet("color: #4CAF50;")
-            self.btn_retry.hide() # إخفاء زر الإعادة عند الفوز
+            self.btn_retry.hide() 
             acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية."
         else:
             title_text = "حظ أوفر في المرة القادمة"
             self.title_label.setStyleSheet("color: #F44336;")
-            self.btn_retry.show() # إظهار الزر ليتيح للاعب المحاولة مجدداً
+            self.btn_retry.show() 
             acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية. يمكنك الضغط على إعادة التحدي للمحاولة مجدداً."
             
         self.title_label.setText(title_text)
 
-        # Set Stats (Updated to show questions count)
+        # Set Stats
         self.score_label.setText(f"النتيجة\n{correct} / {total_questions}")
         self.speed_label.setText(f"متوسط السرعة\n{stats['avg_time']} ثانية/سؤال")
         self.correct_label.setText(f"إجابات صحيحة\n{stats['correct_count']}")
         self.wrong_label.setText(f"إجابات خاطئة\n{stats['wrong_count']}")
 
-        # Show/Hide Review button
+        # Show/Hide Review button based on mistakes
         self.btn_review.setVisible(stats["wrong_count"] > 0)
 
         # Accessibility announcement
         self.view_model.read_text(acc_text, interrupt=True)
 
     def _on_share_clicked(self):
-        # Calculate questions count for sharing
-        from core.constants import POINTS_PER_QUESTION
-        total_questions = self.current_stats["max_score"] // POINTS_PER_QUESTION
+        # Calculate questions count using the global constant
+        total_questions = self.current_stats["max_score"] // const.POINTS_PER_QUESTION
         correct = self.current_stats["correct_count"]
         
         text = (f"تحدي IlmQuiz!\n"
                 f"النتيجة: {correct} من {total_questions}\n"
                 f"متوسط السرعة: {self.current_stats['avg_time']} ثانية للسؤال.\n"
                 f"هل يمكنك تحطيم رقمي؟")
+        
         QApplication.clipboard().setText(text)
         self.view_model.audio.play_sound("correct")
         self.view_model.read_text("تم نسخ النتيجة للحافظة", interrupt=True)

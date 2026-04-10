@@ -27,7 +27,7 @@ class ReviewScreen(QWidget):
         # Scroll Area for Mistakes
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setObjectName("topics_scroll") # Reuse invisible background style
+        self.scroll_area.setObjectName("topics_scroll") 
         
         self.mistakes_container = QWidget()
         self.mistakes_layout = QVBoxLayout(self.mistakes_container)
@@ -45,11 +45,13 @@ class ReviewScreen(QWidget):
 
     def load_mistakes(self, mistakes: list):
         """Populates the list with mistake cards."""
-        # Clear existing items
+        
+        # Safely clear existing items, including ghost spacers (QSpacerItems)
         while self.mistakes_layout.count():
-            child = self.mistakes_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+            item = self.mistakes_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
         for idx, (question, correct_answer) in enumerate(mistakes):
             card = QFrame()
