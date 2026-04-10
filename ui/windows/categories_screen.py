@@ -1,7 +1,8 @@
 import os
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QPushButton, QLabel, QFrame, QHBoxLayout
-from PySide6.QtGui import QPixmap, QIcon
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt, Signal
+import core.constants as const
 
 class CategoriesScreen(QWidget):
     """Screen displaying the main quiz categories with icons and descriptions."""
@@ -23,25 +24,28 @@ class CategoriesScreen(QWidget):
             5: "history.svg",
             6: "arabia.svg"
         }
+        
         self._setup_ui()
+        # Initialize the categories for the first time
+        self.load_categories()
 
     def _setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(30, 30, 30, 30)
-        layout.setSpacing(20)
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(30, 30, 30, 30)
+        self.layout.setSpacing(20)
 
         # Create a header layout for the title and settings button
         header_layout = QHBoxLayout()
 
         # Settings Button
         self.settings_btn = QPushButton("الإعدادات")
-        self.settings_btn.setObjectName("back_button") # Reusing the style
+        self.settings_btn.setObjectName("back_button") 
         self.settings_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.settings_btn.clicked.connect(self.settings_requested.emit)
 
         # About Button
         self.about_btn = QPushButton("حول البرنامج")
-        self.about_btn.setObjectName("back_button") # تم التعديل
+        self.about_btn.setObjectName("back_button") 
         self.about_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.about_btn.clicked.connect(self.about_requested.emit)
 
@@ -60,15 +64,23 @@ class CategoriesScreen(QWidget):
         header_layout.addWidget(self.about_btn)
         header_layout.addWidget(self.stats_btn)
         header_layout.addWidget(title_label, 1)
-        layout.addLayout(header_layout)
+        self.layout.addLayout(header_layout)
+        self.layout.addWidget(title_label)
 
-        layout.addWidget(title_label)
+        # Container for dynamic category grid
+        self.grid_container = QWidget()
+        self.grid_layout = QGridLayout(self.grid_container)
+        self.grid_layout.setSpacing(20)
+        self.layout.addWidget(self.grid_container)
 
-
-
-        grid_layout = QGridLayout()
-        grid_layout.setSpacing(20)
-        
+    def load_categories(self):
+        """Fetches categories from the DB and rebuilds the grid to support live updates."""
+        # Clear existing layout children
+        while self.grid_layout.count():
+            child = self.grid_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+                
         categories = self.view_model.get_categories()
         
         row, col = 0, 0
@@ -82,11 +94,13 @@ class CategoriesScreen(QWidget):
             icon_label = QLabel()
             icon_label.setObjectName("category_icon")
             icon_name = self.icon_mapping.get(category.id, "default.svg")
-            icon_path = os.path.join("assets", "icons", icon_name)
+            
+            # Use absolute BASE_DIR to prevent path resolution errors in frozen mode
+            icon_path = os.path.join(const.BASE_DIR, "assets", "icons", icon_name)
             
             if os.path.exists(icon_path):
                 pixmap = QPixmap(icon_path)
-                # Scale the SVG to a suitable size (e.g., 80x80)
+                # Scale the SVG to a suitable size
                 icon_label.setPixmap(pixmap.scaled(80, 80, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
             
             icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -95,6 +109,7 @@ class CategoriesScreen(QWidget):
             btn = QPushButton(category.arabic_name)
             btn.setObjectName("category_button")
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            
             # Link the description to the button for screen readers
             btn.setAccessibleDescription(category.description)
             btn.clicked.connect(lambda checked=False, cid=category.id: self._on_category_clicked(cid))
@@ -110,14 +125,12 @@ class CategoriesScreen(QWidget):
             card_layout.addWidget(btn)
             card_layout.addWidget(desc_label)
             
-            grid_layout.addWidget(card, row, col)
+            self.grid_layout.addWidget(card, row, col)
             
             col += 1
             if col > 1:
                 col = 0
                 row += 1
-
-        layout.addLayout(grid_layout)
 
     def _on_category_clicked(self, category_id: int):
         self.view_model.audio.play_sound("correct")
