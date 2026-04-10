@@ -3,6 +3,8 @@ import sys
 import platform
 import shutil
 
+APP_VERSION = "1.0.0"
+
 # 1. Determine the Base Directory (Read-only for installed apps)
 IS_FROZEN = getattr(sys, 'frozen', False)
 
