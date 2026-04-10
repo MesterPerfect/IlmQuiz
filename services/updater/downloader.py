@@ -20,6 +20,7 @@ class UpdateDownloader(QThread):
         self.target_version = target_version
         
         filename = download_url.split("/")[-1]
+        # Store in temp directory to avoid permission issues
         self.download_path = os.path.join(tempfile.gettempdir(), f"ilmquiz_update_{filename}")
         self._is_cancelled = False
 

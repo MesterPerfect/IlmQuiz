@@ -29,6 +29,7 @@ class UpdateChecker(QThread):
             logger.info(f"Checking for updates from: {UPDATE_JSON_URL} on channel: {self.update_channel}")
             
             import time
+            # Prevent caching by appending a timestamp query parameter
             url_with_nocache = f"{UPDATE_JSON_URL}?t={int(time.time())}"
             req = urllib.request.Request(url_with_nocache, headers={'User-Agent': 'IlmQuiz-App'})
             
