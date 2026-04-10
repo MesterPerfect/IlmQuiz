@@ -494,3 +494,19 @@ QSlider::handle:horizontal:focus {
     selection-background-color: #FFFF00;
     selection-color: #000000;
 }
+/* Progress Bar Styling */
+#game_progress_bar {
+    border: 2px solid #FFFFFF;
+    border-radius: 10px;
+    text-align: center;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 16px;
+    background-color: #1E1E1E;
+    max-height: 25px;
+}
+
+#game_progress_bar::chunk {
+    background-color: #FFFF00;
+    border-radius: 8px;
+}

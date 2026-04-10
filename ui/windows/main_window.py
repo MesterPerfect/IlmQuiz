@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.stats_screen = StatsScreen(self.view_model)
         self.result_screen = ResultScreen(self.view_model)
         self.review_screen = ReviewScreen(self.view_model)
+        self.game_screen.back_requested.connect(self._show_categories_screen)
 
         # Connect signals
         self.welcome_screen.start_requested.connect(self._show_categories_screen)

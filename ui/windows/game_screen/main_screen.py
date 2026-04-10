@@ -1,6 +1,7 @@
 import logging
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QRadioButton, QPushButton, QButtonGroup, QFrame)
+                               QRadioButton, QPushButton, QButtonGroup, QFrame,
+                               QProgressBar, QMessageBox)
 from PySide6.QtCore import Qt, Signal, QTimer
 
 logger = logging.getLogger(__name__)
@@ -10,8 +11,8 @@ class GameScreen(QWidget):
     Main gameplay screen. Displays questions, handles answers, 
     and updates the UI based on GameEngine signals.
     """
-    # Updated to receive a dictionary containing all stats
     game_finished = Signal(dict) 
+    back_requested = Signal() # Signal to return to topics screen if user exits
 
     def __init__(self, view_model):
         super().__init__()
@@ -22,20 +23,28 @@ class GameScreen(QWidget):
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(30, 30, 30, 30)
-        self.main_layout.setSpacing(25)
+        self.main_layout.setSpacing(20)
 
-        # Top Bar: Timer, Question Counter, Lives
+        # 1. Top Bar: Exit Button, Timer, Question Counter, Lives
         self.top_bar = QHBoxLayout()
+        
+        # New Exit Button for Level
+        self.exit_btn = QPushButton("خروج")
+        self.exit_btn.setObjectName("back_button")
+        self.exit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.exit_btn.clicked.connect(self._on_exit_clicked)
         
         self.timer_label = QLabel("الوقت: 30")
         self.timer_label.setObjectName("timer_label")
         
-        self.counter_label = QLabel("السؤال: 1/20")
+        self.counter_label = QLabel("السؤال: 1 من 20")
         self.counter_label.setObjectName("counter_label")
         
         self.lives_label = QLabel("القلوب: ❤️❤️❤️")
         self.lives_label.setObjectName("lives_label")
         
+        self.top_bar.addWidget(self.exit_btn)
+        self.top_bar.addStretch()
         self.top_bar.addWidget(self.timer_label)
         self.top_bar.addStretch()
         self.top_bar.addWidget(self.counter_label)
@@ -44,7 +53,17 @@ class GameScreen(QWidget):
         
         self.main_layout.addLayout(self.top_bar)
 
-        # Question Area
+        # 2. Progress Bar (New Feature)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setObjectName("game_progress_bar")
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.progress_bar.setFormat("%p%") # Displays percentage like 35%
+        self.main_layout.addWidget(self.progress_bar)
+
+        # 3. Question Area
         self.question_label = QLabel("")
         self.question_label.setObjectName("question_label")
         self.question_label.setWordWrap(True)
@@ -52,7 +71,7 @@ class GameScreen(QWidget):
         self.question_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.main_layout.addWidget(self.question_label, stretch=2)
 
-        # Answers Area
+        # 4. Answers Area
         self.answers_frame = QFrame()
         self.answers_layout = QVBoxLayout(self.answers_frame)
         self.answers_layout.setSpacing(20)
@@ -70,7 +89,7 @@ class GameScreen(QWidget):
             
         self.main_layout.addWidget(self.answers_frame, stretch=2)
 
-        # Bottom Bar: Helper and Submit
+        # 5. Bottom Bar: Helper and Submit
         self.bottom_bar = QHBoxLayout()
         
         self.helper_btn = QPushButton("مساعدة 50/50")
@@ -99,8 +118,13 @@ class GameScreen(QWidget):
         engine.game_over.connect(self._on_game_over)
 
     def _on_question_changed(self, question, current_idx, total):
-        self.counter_label.setText(f"السؤال: {current_idx}/{total}")
+        # Update text explicitly as "X of Y"
+        self.counter_label.setText(f"السؤال: {current_idx} من {total}")
         self.question_label.setText(question.question)
+        
+        # Calculate and update progress bar percentage
+        percent = int((current_idx / total) * 100)
+        self.progress_bar.setValue(percent)
         
         # Reset radio buttons for the new question
         self.answer_group.setExclusive(False)
@@ -110,12 +134,10 @@ class GameScreen(QWidget):
             rb.setEnabled(True)
             rb.setChecked(False)
             rb.setProperty("answer_id", ans.id)
-            rb.setStyleSheet("") # Reset any previous styling
+            rb.setStyleSheet("") # Reset styling
         self.answer_group.setExclusive(True)
         
         self.submit_btn.setEnabled(True)
-        
-        # Make sure helper is only enabled if not used yet
         self.helper_btn.setEnabled(not self.view_model.engine.state.helper_used)
 
     def _on_time_updated(self, remaining):
@@ -151,52 +173,71 @@ class GameScreen(QWidget):
         self.view_model.submit_answer(answer_id)
 
     def _on_answer_result(self, is_correct, correct_answer):
-        # Highlight the correct/wrong answers
         checked_btn = self.answer_group.checkedButton()
         
         for rb in self.radio_buttons:
-            rb.setEnabled(False) # Disable all buttons
+            rb.setEnabled(False) 
             if rb.property("answer_id") == correct_answer.id:
-                rb.setStyleSheet("color: #4CAF50; font-weight: bold;") # Green for correct
+                rb.setStyleSheet("color: #4CAF50; font-weight: bold;") 
             elif rb == checked_btn and not is_correct:
-                rb.setStyleSheet("color: #F44336; text-decoration: line-through;") # Red for wrong
+                rb.setStyleSheet("color: #F44336; text-decoration: line-through;") 
                 
-        # Wait 2.5 seconds before moving to the next question automatically
         QTimer.singleShot(2500, self.view_model.advance_game)
 
-    # Updated to receive the stats dictionary directly
     def _on_game_over(self, stats: dict):
         self.game_finished.emit(stats)
+
+    def _on_exit_clicked(self):
+        """Displays a confirmation dialog before aborting the current level."""
+        # Optional: Announce dialog for screen readers
+        self.view_model.read_text("هل أنت متأكد أنك تريد الخروج من هذا التحدي؟ ستفقد تقدمك في هذا المستوى.", interrupt=True)
+        
+        reply = QMessageBox.question(
+            self, 
+            "تأكيد الخروج", 
+            "هل أنت متأكد أنك تريد الخروج من هذا التحدي؟\nستفقد تقدمك في هذا المستوى.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.view_model.stop_game()
+            self.back_requested.emit()
+            self.view_model.audio.play_sound("beep") # UI feedback
 
     def keyPressEvent(self, event):
         """Handle keyboard shortcuts for accessibility."""
         key = event.key()
         
-        # Shortcut 'T' for Time
         if key == Qt.Key.Key_T:
             remaining = self.view_model.engine.remaining_time
             self.view_model.read_text(f"الوقت المتبقي {remaining} ثانية", interrupt=True)
             
-        # Shortcut 'H' for Hearts (Lives)
         elif key == Qt.Key.Key_H:
             lives = self.view_model.engine.state.lives
             lives_msg = ""
-            if lives == 1:
-                lives_msg = "لديك قلب واحد"
-            elif lives == 2:
-                lives_msg = "لديك قلبان"
-            elif lives == 3:
-                lives_msg = "لديك ثلاثة قلوب"
-            else:
-                lives_msg = "لا يوجد لديك قلوب"
+            if lives == 1: lives_msg = "لديك قلب واحد"
+            elif lives == 2: lives_msg = "لديك قلبان"
+            elif lives == 3: lives_msg = "لديك ثلاثة قلوب"
+            else: lives_msg = "لا يوجد لديك قلوب"
             self.view_model.read_text(lives_msg, interrupt=True)
             
-        # Shortcut 'A' for Question (Ask)
         elif key == Qt.Key.Key_A:
             question = self.view_model.engine.state.current_question
             if question:
                 self.view_model.read_text(question.question, interrupt=True)
-        
+                
+        # New Shortcut 'S' for Status (Question Progress)
+        elif key == Qt.Key.Key_S:
+            try:
+                state = self.view_model.engine.state
+                current = state.current_question_index + 1
+                total = len(state.questions)
+                remaining = total - current
+                msg = f"السؤال {current} من {total}. المتبقي {remaining} أسئلة."
+                self.view_model.read_text(msg, interrupt=True)
+            except Exception:
+                pass
+                
         else:
-            # Pass other keys to the default handler
             super().keyPressEvent(event)
