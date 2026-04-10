@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from services.updater import UpdateDownloader
+import core.constants as const
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class UpdateDialog(QDialog):
 
         # Title Label
         self.title_label = QLabel(f"<b>يتوفر إصدار جديد: v{self.new_version}</b>")
-        self.title_label.setObjectName("welcome_subtitle") # Reusing style
+        self.title_label.setObjectName("welcome_subtitle") 
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.title_label)
 
@@ -61,7 +62,7 @@ class UpdateDialog(QDialog):
         # Buttons Layout
         self.buttons_layout = QHBoxLayout()
         
-        # 1. زر نسخ المستجدات
+        # 1. Copy Notes Button
         self.btn_copy = QPushButton("نسخ الملاحظات")
         self.btn_copy.setObjectName("action_button")
         self.btn_copy.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -70,14 +71,14 @@ class UpdateDialog(QDialog):
         
         self.buttons_layout.addStretch()
         
-        # 2. زر التحديث
+        # 2. Update Button
         self.btn_update = QPushButton("تحديث الآن")
         self.btn_update.setObjectName("action_button")
         self.btn_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update.clicked.connect(self._start_download)
         self.buttons_layout.addWidget(self.btn_update)
         
-        # 3. زر الإلغاء/التأجيل
+        # 3. Cancel/Later Button
         self.btn_later = QPushButton("لاحقاً")
         self.btn_later.setObjectName("action_button")
         self.btn_later.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -135,6 +136,9 @@ class UpdateDialog(QDialog):
         
         self._launch_update_file(file_path)
         self.accept()
+        
+        # Graceful application shutdown before triggering the OS exit
+        QApplication.instance().quit()
         sys.exit(0)
 
     def _on_download_error(self, error_msg: str):
@@ -178,7 +182,8 @@ class UpdateDialog(QDialog):
 
         # 2. Handle Zip/Tar Archives for Portable / Mac / Linux Mode
         if getattr(sys, 'frozen', False):
-            target_dir = os.path.dirname(sys.executable)
+            # FIXED: Use global BASE_DIR to ensure proper pathing inside macOS .app bundles
+            target_dir = const.BASE_DIR
             main_exe = os.path.basename(sys.executable)
             updater_exe = "apply_update.exe" if sys.platform == "win32" else "apply_update"
             updater_path = os.path.join(target_dir, updater_exe)
@@ -196,7 +201,7 @@ class UpdateDialog(QDialog):
                 else:
                     subprocess.Popen(args, start_new_session=True)
             else:
-                logger.error("Updater executable not found. Unable to self-update.")
+                logger.error(f"Updater executable not found at {updater_path}. Unable to self-update.")
                 QMessageBox.warning(self, "خطأ", "ملف المُحدّث التلقائي غير موجود.")
         else:
             QMessageBox.information(

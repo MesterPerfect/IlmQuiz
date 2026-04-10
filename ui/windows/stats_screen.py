@@ -35,7 +35,7 @@ class StatsScreen(QWidget):
 
         # Stats Grid
         self.stats_frame = QFrame()
-        self.stats_frame.setObjectName("stats_frame") # Reusing result screen style
+        self.stats_frame.setObjectName("stats_frame") 
         self.stats_layout = QGridLayout(self.stats_frame)
         self.stats_layout.setSpacing(20)
         
@@ -44,11 +44,12 @@ class StatsScreen(QWidget):
 
     def refresh_stats(self):
         """Fetches latest stats and updates the UI."""
-        # Clear existing layout
+        # Safely clear existing layout items to prevent memory leaks
         while self.stats_layout.count():
-            child = self.stats_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+            item = self.stats_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
                 
         stats = self.view_model.get_global_stats()
         
