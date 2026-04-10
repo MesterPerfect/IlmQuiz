@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
                                QLabel, QCheckBox, QSlider, QFrame, QMessageBox, QComboBox)
 from PySide6.QtCore import Qt, Signal
-import os
 
+import core.constants as const
 from services.updater import UpdateChecker
 from ui.windows.update_dialog import UpdateDialog
 
@@ -228,7 +228,9 @@ class SettingsScreen(QWidget):
         self.check_update_btn.setText("جاري البحث...")
         self.view_model.read_text("جاري البحث عن تحديثات.")
         
-        current_version = os.environ.get("APP_VERSION", "1.0.0")
+        # Fetch version safely from global constants, not os.environ
+        current_version = const.APP_VERSION
+        
         self.checker = UpdateChecker(current_version=current_version)
         self.checker.update_available.connect(self._on_update_found)
         self.checker.no_update.connect(self._on_no_update)

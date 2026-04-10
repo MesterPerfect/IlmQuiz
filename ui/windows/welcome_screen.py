@@ -1,4 +1,5 @@
 import os
+import core.constants as const
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
 from PySide6.QtCore import Qt, Signal
 
@@ -68,7 +69,7 @@ class WelcomeScreen(QWidget):
         if not auto_update:
             return
 
-        current_version = os.environ.get("APP_VERSION", "1.0.0")
+        current_version = const.APP_VERSION
         
         self.checker = UpdateChecker(current_version=current_version)
         self.checker.update_available.connect(self._show_update_dialog)
