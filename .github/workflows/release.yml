@@ -1,72 +1,102 @@
-name: Build and Release IlmQuiz
+name: IlmQuiz Professional Build Pipeline
 
 on:
   push:
-    # Trigger only when pushing to the specific release branch or on version tags
     branches:
-      - 'release'
-    tags:
-      - 'v*'
+      - release
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false 
       matrix:
-        # Define cross-platform build targets
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Use a stable Python version for PySide6
+          python-version: '3.11' # Stable version for PySide6
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build with PyInstaller
+      - name: Build Executable (All Platforms)
         run: |
-          # The command assumes your main entry point is main.py
-          # Adjust --add-data based on your OS separator (; for Win, : for Unix)
+          # نستخدم PyInstaller لإنشاء مجلد يحتوي على الملف التنفيذي وكل الملحقات
           python -m PyInstaller --noconfirm --onedir --windowed --name "IlmQuiz" --add-data "assets${{ matrix.os == 'windows-latest' && ';' || ':' }}assets" main.py
 
-      - name: Package Artifacts (Windows)
+      - name: Build Inno Setup Installer (Windows Only)
         if: matrix.os == 'windows-latest'
         run: |
-          powershell Compress-Archive -Path dist/IlmQuiz -DestinationPath IlmQuiz_Windows_v1.0.0.zip
+          # استدعاء مترجم Inno Setup لبناء ملف الـ Setup.exe
+          # تأكد أن ملف .iss يشير إلى مجلد dist/IlmQuiz/
+          iscc ilmquiz_setup.iss
 
-      - name: Package Artifacts (macOS/Linux)
+      - name: Package Artifacts (Windows Portable)
+        if: matrix.os == 'windows-latest'
+        run: |
+          python -m zipfile -c IlmQuiz_Windows_Portable.zip dist/IlmQuiz/
+          # سنقوم برفع كل من الـ Zip والـ Setup.exe (الذي ينتجه Inno Setup عادة في مجلد Output)
+
+      - name: Package Artifacts (macOS & Linux)
         if: matrix.os != 'windows-latest'
         run: |
-          cd dist && tar -czvf ../IlmQuiz_${{ matrix.os }}_v1.0.0.tar.gz IlmQuiz/
+          cd dist
+          tar -czvf ../IlmQuiz_${{ matrix.os }}.tar.gz IlmQuiz/
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
-          path: IlmQuiz_*.*
+          path: |
+            *.zip
+            *.tar.gz
+            Output/*.exe
 
   release:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
         with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Extract Version
+        id: release_info
+        run: |
+          # استخراج النسخة كما في مشروعك السابق
+          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION)")
+          echo "TAG_NAME=v${APP_VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_NAME=IlmQuiz v${APP_VERSION}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: ${{ env.RELEASE_NAME }}
           files: |
-            **/IlmQuiz_*.*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            artifacts/*.zip
+            artifacts/*.tar.gz
+            artifacts/*.exe
+          generate_release_notes: true
