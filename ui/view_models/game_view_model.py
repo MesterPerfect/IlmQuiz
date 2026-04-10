@@ -54,25 +54,57 @@ class GameViewModel(QObject):
         self.engine.abort_game()
         self.tts.stop()
 
-    def update_all_settings(self, tts_enabled: bool, volume: float, logging_enabled: bool, auto_update_enabled: bool):
+    def update_all_settings(self, tts_enabled: bool, volume: float, logging_enabled: bool, auto_update_enabled: bool, theme: str):
         """Updates and saves all user preferences."""
         if "settings" not in self.settings.data:
             self.settings.data["settings"] = {}
             
-        # Update current active instances
         if hasattr(self.tts, 'enabled'):
             self.tts.enabled = tts_enabled
         self.audio.set_volume(volume)
         
-        # Save to JSON via SettingsManager
         self.settings.data["settings"]["tts_enabled"] = tts_enabled
         self.settings.data["settings"]["audio_volume"] = volume
         self.settings.data["settings"]["logging_enabled"] = logging_enabled
         self.settings.data["settings"]["auto_update_enabled"] = auto_update_enabled
+        
+        # Check if theme changed to apply it instantly
+        old_theme = self.settings.data["settings"].get("theme", "")
+        self.settings.data["settings"]["theme"] = theme
+        
         self.settings.save()
         
-        # Log the change
-        logger.info(f"Settings updated -> TTS: {tts_enabled}, Vol: {volume}, Log: {logging_enabled}, AutoUpdate: {auto_update_enabled}")
+        if old_theme != theme:
+            self.apply_theme(theme)
+        
+        logger.info(f"Settings updated -> TTS: {tts_enabled}, Vol: {volume}, Theme: {theme}")
+
+    def apply_theme(self, theme_name: str = None):
+        """Loads and applies the QSS stylesheet to the entire application."""
+        import os
+        from PySide6.QtWidgets import QApplication
+        
+        if not theme_name:
+            theme_name = self.settings.data.get("settings", {}).get("theme", "dark_theme")
+            
+        theme_path = os.path.join("assets", "styles", f"{theme_name}.qss")
+        if os.path.exists(theme_path):
+            try:
+                with open(theme_path, "r", encoding="utf-8") as f:
+                    qss = f.read()
+                    app = QApplication.instance()
+                    if app:
+                        app.setStyleSheet(qss)
+                logger.info(f"Theme '{theme_name}' applied successfully.")
+            except Exception as e:
+                logger.error(f"Failed to load theme {theme_name}: {e}")
+        else:
+            logger.warning(f"Theme file not found: {theme_path}")
+
+    def read_text(self, text: str, interrupt: bool = True):
+        tts_enabled = self.settings.data.get("settings", {}).get("tts_enabled", True)
+        if tts_enabled:
+            self.tts.speak(text, interrupt)
 
     def read_text(self, text: str, interrupt: bool = True):
         tts_enabled = self.settings.data.get("settings", {}).get("tts_enabled", True)

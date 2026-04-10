@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                               QLabel, QCheckBox, QSlider, QFrame, QMessageBox)
+                               QLabel, QCheckBox, QSlider, QFrame, QMessageBox, QComboBox)
 from PySide6.QtCore import Qt, Signal
 import os
 
@@ -7,7 +7,7 @@ from services.updater import UpdateChecker
 from ui.windows.update_dialog import UpdateDialog
 
 class SettingsScreen(QWidget):
-    """Screen for configuring user preferences like TTS, Volume, Logging, and Updates."""
+    """Screen for configuring user preferences like TTS, Volume, Logging, Updates, and Themes."""
     
     back_requested = Signal()
 
@@ -45,14 +45,30 @@ class SettingsScreen(QWidget):
         settings_layout = QVBoxLayout(settings_frame)
         settings_layout.setSpacing(30)
 
-        # 1. TTS Toggle Checkbox
+        # 1. Theme Selector (ComboBox)
+        theme_layout = QHBoxLayout()
+        theme_label = QLabel("مظهر اللعبة (الثيم):")
+        theme_label.setObjectName("settings_label")
+        
+        self.theme_combo = QComboBox()
+        self.theme_combo.setObjectName("settings_combo")
+        self.theme_combo.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.theme_combo.addItem("الوضع الليلي (الافتراضي)", "dark_theme")
+        self.theme_combo.addItem("التباين العالي (لضعاف البصر)", "high_contrast")
+        self.theme_combo.currentIndexChanged.connect(self._on_settings_changed)
+        
+        theme_layout.addWidget(theme_label)
+        theme_layout.addWidget(self.theme_combo)
+        settings_layout.addLayout(theme_layout)
+
+        # 2. TTS Toggle Checkbox
         self.tts_checkbox = QCheckBox("تفعيل الناطق الصوتي (TTS)")
         self.tts_checkbox.setObjectName("settings_checkbox")
         self.tts_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.tts_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.tts_checkbox)
 
-        # 2. Volume Slider
+        # 3. Volume Slider
         volume_layout = QHBoxLayout()
         volume_label = QLabel("مستوى المؤثرات الصوتية:")
         volume_label.setObjectName("settings_label")
@@ -69,21 +85,21 @@ class SettingsScreen(QWidget):
         volume_layout.addWidget(self.volume_slider)
         settings_layout.addLayout(volume_layout)
 
-        # 3. Logging Toggle Checkbox
+        # 4. Logging Toggle Checkbox
         self.logging_checkbox = QCheckBox("تفعيل حفظ السجلات (Logging) للمساعدة في حل المشاكل")
         self.logging_checkbox.setObjectName("settings_checkbox")
         self.logging_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.logging_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.logging_checkbox)
 
-        # 4. Auto Update Toggle Checkbox
+        # 5. Auto Update Toggle Checkbox
         self.auto_update_checkbox = QCheckBox("البحث عن التحديثات تلقائياً عند بدء التشغيل")
         self.auto_update_checkbox.setObjectName("settings_checkbox")
         self.auto_update_checkbox.setCursor(Qt.CursorShape.PointingHandCursor)
         self.auto_update_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.auto_update_checkbox)
 
-        # 5. Manual Update Button
+        # 6. Manual Update Button
         self.check_update_btn = QPushButton("البحث عن تحديثات الآن")
         self.check_update_btn.setObjectName("action_button")
         self.check_update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -103,17 +119,25 @@ class SettingsScreen(QWidget):
         volume = settings.get("audio_volume", 0.8)
         logging_enabled = settings.get("logging_enabled", True)
         auto_update = settings.get("auto_update_enabled", True)
+        current_theme = settings.get("theme", "dark_theme")
 
+        self.theme_combo.blockSignals(True)
         self.tts_checkbox.blockSignals(True)
         self.volume_slider.blockSignals(True)
         self.logging_checkbox.blockSignals(True)
         self.auto_update_checkbox.blockSignals(True)
+
+        # Set ComboBox active item based on saved theme
+        index = self.theme_combo.findData(current_theme)
+        if index >= 0:
+            self.theme_combo.setCurrentIndex(index)
 
         self.tts_checkbox.setChecked(tts_enabled)
         self.volume_slider.setValue(int(volume * 100))
         self.logging_checkbox.setChecked(logging_enabled)
         self.auto_update_checkbox.setChecked(auto_update)
 
+        self.theme_combo.blockSignals(False)
         self.tts_checkbox.blockSignals(False)
         self.volume_slider.blockSignals(False)
         self.logging_checkbox.blockSignals(False)
@@ -126,8 +150,9 @@ class SettingsScreen(QWidget):
         volume = self.volume_slider.value() / 100.0
         logging_enabled = self.logging_checkbox.isChecked()
         auto_update = self.auto_update_checkbox.isChecked()
+        selected_theme = self.theme_combo.currentData()
         
-        self.view_model.update_all_settings(tts_enabled, volume, logging_enabled, auto_update)
+        self.view_model.update_all_settings(tts_enabled, volume, logging_enabled, auto_update, selected_theme)
         
         if self.sender() == self.volume_slider:
             self.view_model.audio.play_sound("beep")

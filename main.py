@@ -1,6 +1,7 @@
 import sys
 import PySide6
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
 
 # 1. Setup logging FIRST before importing other project modules
 from services.logger_service import setup_logging
@@ -19,6 +20,7 @@ def main():
     logger.info("Starting IlmQuiz application...")
     
     app = QApplication(sys.argv)
+    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
     
     logger.info("Initializing background services and database...")
     settings_manager = SettingsManager()
@@ -37,6 +39,9 @@ def main():
         audio_service=audio_service,
         settings_manager=settings_manager
     )
+
+    # Apply the saved theme immediately before showing the window
+    view_model.apply_theme()
     
     window = MainWindow(view_model)
 

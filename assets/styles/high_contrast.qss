@@ -1,0 +1,496 @@
+/* =========================================
+   High Contrast Theme for Visually Impaired
+   ========================================= */
+
+/* Base Application Style */
+QWidget {
+    background-color: #000000;
+    color: #FFFFFF;
+    font-family: "Cairo", "Tajawal", "Segoe UI", sans-serif;
+    font-size: 18px; /* Slightly larger base font */
+}
+
+/* Accessible Button Style */
+QPushButton {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF; /* Thicker border */
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+QPushButton:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+QPushButton:focus {
+    background-color: #FFFF00; /* Bright Yellow for Focus */
+    color: #000000;
+    border: 3px solid #FFFF00;
+    outline: none;
+}
+
+QPushButton:pressed {
+    background-color: #FFFF00;
+    color: #000000;
+}
+
+/* Labels */
+QLabel {
+    font-size: 26px;
+    font-weight: bold;
+    color: #FFFF00; /* Bright yellow for standard labels */
+}
+
+/* Welcome Screen */
+#welcome_title {
+    font-size: 68px;
+    font-weight: bold;
+    color: #FFFF00;
+    margin-bottom: 0px;
+}
+
+#welcome_subtitle {
+    font-size: 30px;
+    color: #FFFFFF;
+    margin-top: 0px;
+    margin-bottom: 40px;
+}
+
+/* Screen Title */
+#screen_title {
+    font-size: 36px;
+    color: #FFFF00;
+    margin-bottom: 10px;
+    font-weight: bold;
+    border-bottom: 3px solid #FFFFFF;
+}
+
+/* Category icon Styling */
+#category_icon {
+    margin-bottom: 10px;
+    background: transparent;
+}
+
+/* Category Card Styling */
+#category_card {
+    background-color: #000000;
+    border: 4px solid #FFFFFF; /* Very clear boundary */
+    border-radius: 20px;
+    padding: 20px;
+    min-width: 250px;
+}
+
+#category_card:hover {
+    border: 4px solid #FFFF00;
+}
+
+/* Category Button inside Card */
+#category_button {
+    margin-top: 5px;
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 3px solid #FFFFFF;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+#category_button:hover {
+    background-color: #FFFF00;
+    border-color: #FFFF00;
+}
+
+#category_button:focus {
+    background-color: #FFFF00;
+    border-color: #FFFF00;
+    color: #000000;
+}
+
+/* Description Text */
+#category_description {
+    color: #FFFFFF; /* Pure white for max readability */
+    font-size: 18px;
+    line-height: 1.5;
+    padding: 5px;
+}
+
+/* Topics Screen */
+#back_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 150px;
+}
+
+#back_button:hover, #back_button:focus {
+    background-color: #FFFF00;
+    color: #000000;
+    border-color: #FFFF00;
+}
+
+#level_frame {
+    background-color: #000000;
+    border: 3px solid #FFFFFF;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+#level_label {
+    font-size: 20px;
+    font-weight: bold;
+    color: #FFFF00;
+    margin-right: 15px;
+}
+
+QRadioButton {
+    font-size: 22px;
+    color: #FFFFFF;
+    padding: 5px;
+    font-weight: bold;
+}
+
+QRadioButton::indicator {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #FFFFFF;
+    border-radius: 12px;
+    background: #000000;
+}
+
+QRadioButton::indicator:checked {
+    background: #FFFF00;
+    border: 2px solid #FFFF00;
+}
+
+QRadioButton:focus {
+    color: #FFFF00;
+}
+
+#topics_scroll {
+    border: none;
+    background: transparent;
+}
+
+#topics_scroll QWidget {
+    background: transparent;
+}
+
+#topic_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#topic_button:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+#topic_button:focus {
+    background-color: #FFFF00;
+    color: #000000;
+    border: 3px solid #FFFF00;
+    outline: none;
+}
+
+/* Game Screen Elements */
+#timer_label, #counter_label, #lives_label {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFFF00; 
+}
+
+#lives_label {
+    color: #FF5555; /* Bright red for lives */
+}
+
+#question_label {
+    font-size: 36px;
+    color: #FFFFFF;
+    background-color: #000000;
+    border: 4px solid #FFFFFF;
+    border-radius: 15px;
+    padding: 30px;
+}
+
+#answer_radio {
+    font-size: 26px;
+    background-color: #000000;
+    border: 3px solid #FFFFFF;
+    border-radius: 10px;
+    padding: 15px;
+    font-weight: bold;
+}
+
+#answer_radio:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+#answer_radio:focus {
+    background-color: #000000;
+    color: #FFFF00;
+    border: 3px solid #FFFF00;
+}
+
+#answer_radio:checked {
+    background-color: #FFFF00;
+    border: 3px solid #FFFF00;
+    color: #000000;
+}
+
+#answer_radio:disabled {
+    color: #888888;
+    background-color: #000000;
+    border: 3px solid #888888;
+}
+
+#helper_button, #submit_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    max-width: 200px;
+}
+
+#helper_button:hover, #submit_button:hover {
+    background-color: #FFFF00;
+    color: #000000;
+    border-color: #FFFF00;
+}
+
+#helper_button:focus, #submit_button:focus {
+    background-color: #FFFF00;
+    color: #000000;
+    border-color: #FFFF00;
+}
+
+#helper_button:disabled, #submit_button:disabled {
+    background-color: #000000;
+    color: #888888;
+    border: 3px solid #888888;
+}
+
+/* Level Selection Buttons */
+#level_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 400px;
+    border: 3px solid #FFFFFF;
+}
+
+#level_button:hover, #level_button:focus {
+    background-color: #FFFF00;
+    color: #000000;
+    border-color: #FFFF00;
+}
+
+#level_button:disabled {
+    background-color: #000000;
+    color: #888888;
+    border: 3px solid #888888;
+}
+
+#level_msg_label {
+    font-size: 26px;
+    color: #FFFF00;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Settings Screen */
+#settings_frame {
+    background-color: #000000;
+    border: 3px solid #FFFFFF;
+    border-radius: 15px;
+    padding: 30px;
+}
+
+#settings_checkbox {
+    font-size: 24px;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+#settings_checkbox:focus {
+    color: #FFFF00;
+}
+
+#settings_checkbox::indicator {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #FFFFFF;
+    background: #000000;
+}
+
+#settings_checkbox::indicator:checked {
+    background: #FFFF00;
+    border: 2px solid #FFFF00;
+}
+
+#settings_label {
+    font-size: 22px;
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+QSlider::groove:horizontal {
+    border: 3px solid #FFFFFF;
+    height: 14px;
+    background: #000000;
+    border-radius: 7px;
+}
+
+QSlider::handle:horizontal {
+    background: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    width: 24px;
+    margin: -8px 0;
+    border-radius: 12px;
+}
+
+QSlider::handle:horizontal:focus {
+    background: #FFFF00;
+    border-color: #FFFF00;
+}
+
+/* Result Screen */
+#result_title {
+    font-size: 40px;
+    font-weight: bold;
+    color: #FFFF00;
+}
+
+#stats_frame {
+    background-color: #000000;
+    border: 4px solid #FFFFFF;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+#stat_label {
+    font-size: 24px;
+    color: #FFFFFF;
+    background-color: #000000;
+    border: 2px solid #FFFFFF;
+    padding: 20px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+#action_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 8px;
+    border: 3px solid #FFFFFF;
+}
+
+#action_button:hover, #action_button:focus {
+    background-color: #FFFF00;
+    color: #000000;
+    border-color: #FFFF00;
+}
+
+/* Review Screen */
+#mistake_card {
+    background-color: #000000;
+    border: 4px solid #FFFF00; /* Yellow instead of red to maintain high contrast */
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#review_question {
+    font-size: 24px;
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#review_answer {
+    font-size: 22px;
+    color: #00FF00; /* Extremely bright green */
+    font-weight: bold;
+}
+
+/* About Screen */
+#about_app_name {
+    font-size: 40px;
+    font-weight: bold;
+    color: #FFFF00;
+    margin-bottom: 10px;
+}
+
+#about_section_title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #FFFF00;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    border-bottom: 2px solid #FFFFFF;
+}
+
+#about_dev_name {
+    font-size: 26px;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-top: 10px;
+}
+
+#social_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#social_button:hover, #social_button:focus {
+    background-color: #FFFF00;
+    color: #000000;
+    border-color: #FFFF00;
+}
+
+/* ComboBox Styling */
+#settings_combo {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+#settings_combo:hover, #settings_combo:focus {
+    border: 3px solid #FFFF00;
+}
+#settings_combo::drop-down {
+    border: none;
+    width: 30px;
+}
+#settings_combo QAbstractItemView {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 3px solid #FFFFFF;
+    selection-background-color: #FFFF00;
+    selection-color: #000000;
+}

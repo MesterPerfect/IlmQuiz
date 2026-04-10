@@ -414,3 +414,27 @@ QSlider::handle:horizontal {
     background-color: #4CAF50;
     color: #121212;
 }
+
+/* ComboBox Styling */
+#settings_combo {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    border: 2px solid #333333;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+#settings_combo:hover, #settings_combo:focus {
+    border: 2px solid #4CAF50;
+}
+#settings_combo::drop-down {
+    border: none;
+    width: 30px;
+}
+#settings_combo QAbstractItemView {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    selection-background-color: #4CAF50;
+    selection-color: #000000;
+}
