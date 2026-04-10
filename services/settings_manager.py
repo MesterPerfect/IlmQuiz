@@ -15,7 +15,7 @@ class SettingsManager:
         self.data = {
             "settings": {
                 "tts_enabled": True,
-                "audio_volume": 0.8
+                "audio_volume": 0.8,
                 "logging_enabled": True,
                 "auto_update_enabled": True
             },

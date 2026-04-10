@@ -63,13 +63,17 @@ class WelcomeScreen(QWidget):
         self.start_requested.emit()
 
     def _check_for_updates(self):
-        # Read the current version from environment or default to 1.0.0
+        # Check settings before starting the background updater
+        auto_update = self.view_model.settings.data["settings"].get("auto_update_enabled", True)
+        if not auto_update:
+            return
+
         current_version = os.environ.get("APP_VERSION", "1.0.0")
         
-        # Start the checker in the background
         self.checker = UpdateChecker(current_version=current_version)
         self.checker.update_available.connect(self._show_update_dialog)
         self.checker.start()
+
 
     def _show_update_dialog(self, version: str, notes: str, url: str):
         dialog = UpdateDialog(
