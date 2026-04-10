@@ -1,72 +1,160 @@
-name: IlmQuiz Professional Build Pipeline
+name: IlmQuiz Build and Release Pipeline
 
 on:
   push:
     branches:
       - release
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g. v1.0.0)'
+        required: false
+        default: ''
+      release_name:
+        description: 'Release title (e.g. IlmQuiz v1.0.0)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false 
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Stable version for PySide6
+          python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Upgrade pip and install dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install cx_Freeze packaging
 
-      - name: Build Executable (All Platforms)
+      - name: Build with cx_Freeze
+        shell: bash
         run: |
-          # نستخدم PyInstaller لإنشاء مجلد يحتوي على الملف التنفيذي وكل الملحقات
-          python -m PyInstaller --noconfirm --onedir --windowed --name "IlmQuiz" --add-data "assets${{ matrix.os == 'windows-latest' && ';' || ':' }}assets" main.py
+          python setup.py build
 
-      - name: Build Inno Setup Installer (Windows Only)
+      # ==========================================
+      # WINDOWS: Installer (.exe) & Portable (.zip)
+      # ==========================================
+      - name: Build Windows Installer (Inno Setup)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          # استدعاء مترجم Inno Setup لبناء ملف الـ Setup.exe
-          # تأكد أن ملف .iss يشير إلى مجلد dist/IlmQuiz/
+          # Compile the Inno Setup script to generate the .exe installer
           iscc ilmquiz_setup.iss
 
-      - name: Package Artifacts (Windows Portable)
+      - name: Create Windows Portable (ZIP)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          python -m zipfile -c IlmQuiz_Windows_Portable.zip dist/IlmQuiz/
-          # سنقوم برفع كل من الـ Zip والـ Setup.exe (الذي ينتجه Inno Setup عادة في مجلد Output)
+          # Package the build output into a clean ZIP file
+          New-Item -ItemType Directory -Path "portable_output\IlmQuiz" -Force | Out-Null
+          Copy-Item -Path "dist\IlmQuiz\*" -Destination "portable_output\IlmQuiz" -Recurse -Force
+          Compress-Archive -Path "portable_output\IlmQuiz" -DestinationPath "IlmQuiz_Windows_Portable.zip"
 
-      - name: Package Artifacts (macOS & Linux)
-        if: matrix.os != 'windows-latest'
+      # ==========================================
+      # MACOS: Installer (.dmg) & Portable (.zip)
+      # ==========================================
+      - name: Build macOS Installer (DMG)
+        if: matrix.os == 'macos-latest'
+        shell: bash
         run: |
+          # Create a macOS disk image for standard drag-and-drop installation
+          hdiutil create -volname "IlmQuiz" -srcfolder dist/IlmQuiz -ov -format UDZO IlmQuiz_macOS_Installer.dmg
+
+      - name: Create macOS Portable (ZIP)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          # Create a standard ZIP archive for portable use
           cd dist
-          tar -czvf ../IlmQuiz_${{ matrix.os }}.tar.gz IlmQuiz/
+          zip -r ../IlmQuiz_macOS_Portable.zip IlmQuiz/
 
+      # ==========================================
+      # LINUX: Installer (.deb) & Portable (.tar.gz)
+      # ==========================================
+      - name: Build Linux Installer (DEB)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          # Create a standard Debian/Ubuntu package structure
+          export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION)")
+          
+          mkdir -p deb_package/opt/IlmQuiz
+          mkdir -p deb_package/usr/bin
+          mkdir -p deb_package/usr/share/applications
+          mkdir -p deb_package/DEBIAN
+          
+          # Copy app files
+          cp -r dist/IlmQuiz/* deb_package/opt/IlmQuiz/
+          chmod +x deb_package/opt/IlmQuiz/IlmQuiz
+          
+          # Create executable symlink wrapper
+          echo '#!/bin/bash' > deb_package/usr/bin/ilmquiz
+          echo '/opt/IlmQuiz/IlmQuiz "$@"' >> deb_package/usr/bin/ilmquiz
+          chmod +x deb_package/usr/bin/ilmquiz
+          
+          # Create Desktop Entry for app menu
+          cat <<EOF > deb_package/usr/share/applications/ilmquiz.desktop
+          [Desktop Entry]
+          Name=IlmQuiz
+          Comment=Islamic Knowledge Challenge
+          Exec=/opt/IlmQuiz/IlmQuiz
+          Terminal=false
+          Type=Application
+          Categories=Education;Game;
+          EOF
+          
+          # Create DEBIAN control file
+          cat <<EOF > deb_package/DEBIAN/control
+          Package: ilmquiz
+          Version: ${APP_VERSION}
+          Section: games
+          Priority: optional
+          Architecture: amd64
+          Maintainer: MesterPerfect
+          Description: IlmQuiz - Islamic Knowledge Challenge
+          EOF
+          
+          # Build the .deb file
+          dpkg-deb --build deb_package IlmQuiz_Linux_Installer.deb
+
+      - name: Create Linux Portable (TAR.GZ)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          # Compress the build output into a tarball for Linux portable use
+          cd dist
+          tar -czvf ../IlmQuiz_Linux_Portable.tar.gz IlmQuiz/
+
+      # ==========================================
+      # UPLOAD ARTIFACTS
+      # ==========================================
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
           path: |
-            *.zip
-            *.tar.gz
-            Output/*.exe
+            IlmQuiz_*.zip
+            IlmQuiz_*.dmg
+            IlmQuiz_*.tar.gz
+            IlmQuiz_*.deb
+            build_installer/*.exe
 
   release:
     name: Create GitHub Release
@@ -76,19 +164,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
 
-      - name: Extract Version
+      - name: Extract Version & Set Release Info
         id: release_info
         run: |
-          # استخراج النسخة كما في مشروعك السابق
+          # Fetch the app version programmatically
           export APP_VERSION=$(python -c "import sys; sys.path.append('.'); from core.constants import APP_VERSION; print(APP_VERSION)")
-          echo "TAG_NAME=v${APP_VERSION}" >> $GITHUB_ENV
-          echo "RELEASE_NAME=IlmQuiz v${APP_VERSION}" >> $GITHUB_ENV
+          
+          # Set tag and release names based on user input or automated version
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            echo "TAG_NAME=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=${{ github.event.inputs.release_name }}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=v${APP_VERSION}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=IlmQuiz v${APP_VERSION}" >> $GITHUB_ENV
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -97,6 +192,8 @@ jobs:
           name: ${{ env.RELEASE_NAME }}
           files: |
             artifacts/*.zip
+            artifacts/*.dmg
             artifacts/*.tar.gz
+            artifacts/*.deb
             artifacts/*.exe
           generate_release_notes: true
