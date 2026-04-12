@@ -178,3 +178,28 @@ class GameViewModel(QObject):
             "completed_levels": completed_levels,
             "remaining_levels": total_levels - completed_levels
         }
+
+
+    def start_random_journey_round(self, stage: int):
+        """Prepares a mixed 10-question round with dynamic difficulty based on the stage."""
+        time_limit = self.settings.data.get("settings", {}).get("question_time", 30)
+        
+        # Dynamic Difficulty Scaling
+        allowed_levels = [1] # Easy is always included
+        if stage > 10:
+            allowed_levels.append(2) # Introduce Medium questions after stage 10
+        if stage > 30:
+            allowed_levels.append(3) # Introduce Hard questions after stage 30
+            
+        # User requested exactly 10 questions per stage
+        questions = self.db.get_random_mixed_questions(limit=10, levels=allowed_levels)
+        
+        if not questions:
+            self.error_occurred.emit("لا توجد أسئلة كافية لبدء التحدي العشوائي.")
+            return
+            
+        category_name = "الرحلة العشوائية"
+        topic_name = f"المرحلة {stage}"
+        
+        self.engine.load_questions(questions, category_name, topic_name, level=0, time_limit=time_limit)
+        self.engine.start_game()

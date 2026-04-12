@@ -73,3 +73,19 @@ class SettingsManager:
             return True
             
         return False
+
+    def get_unlocked_random_stage(self) -> int:
+        """Returns the highest unlocked stage in the Random Journey mode (Max 100)."""
+        return self.data["progress"].get("random_stage", 1)
+
+    def unlock_next_random_stage(self, completed_stage: int) -> bool:
+        """Unlocks the next random stage up to 100."""
+        current_unlocked = self.get_unlocked_random_stage()
+        next_stage = completed_stage + 1
+        
+        if next_stage > current_unlocked and next_stage <= 100:
+            self.data["progress"]["random_stage"] = next_stage
+            self.save()
+            return True
+            
+        return False

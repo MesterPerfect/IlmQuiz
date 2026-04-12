@@ -8,6 +8,7 @@ class CategoriesScreen(QWidget):
     """Screen displaying the main quiz categories with icons and descriptions."""
     
     category_selected = Signal(int)
+    random_requested = Signal() # Signal for the Random Journey mode
     settings_requested = Signal()
     stats_requested = Signal()
     about_requested = Signal()
@@ -34,7 +35,7 @@ class CategoriesScreen(QWidget):
         self.layout.setContentsMargins(30, 30, 30, 30)
         self.layout.setSpacing(20)
 
-        # Create a header layout for the title and settings button
+        # 1. Create a header layout for the title and top buttons
         header_layout = QHBoxLayout()
 
         # Settings Button
@@ -55,6 +56,7 @@ class CategoriesScreen(QWidget):
         self.stats_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.stats_btn.clicked.connect(self.stats_requested.emit)
 
+        # Screen Title
         title_label = QLabel("اختر تصنيفاً لنبدأ التحدي")
         title_label.setObjectName("screen_title")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -65,9 +67,17 @@ class CategoriesScreen(QWidget):
         header_layout.addWidget(self.stats_btn)
         header_layout.addWidget(title_label, 1)
         self.layout.addLayout(header_layout)
-        self.layout.addWidget(title_label)
 
-        # Container for dynamic category grid
+        # 2. Random Journey Mode Button (Placed elegantly before the grid)
+        self.random_mode_btn = QPushButton("🎲 الرحلة العشوائية (تحدي 100 مرحلة) 🎲")
+        self.random_mode_btn.setObjectName("action_button")
+        self.random_mode_btn.setMinimumHeight(60)
+        self.random_mode_btn.setStyleSheet("font-size: 22px; background-color: #673AB7; color: white;")
+        self.random_mode_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.random_mode_btn.clicked.connect(self.random_requested.emit)
+        self.layout.addWidget(self.random_mode_btn)
+
+        # 3. Container for dynamic category grid
         self.grid_container = QWidget()
         self.grid_layout = QGridLayout(self.grid_container)
         self.grid_layout.setSpacing(20)

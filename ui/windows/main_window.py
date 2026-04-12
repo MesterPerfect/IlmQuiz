@@ -8,6 +8,7 @@ from .categories_screen import CategoriesScreen
 from .settings_screen import SettingsScreen
 from ui.windows.about_screen import AboutScreen
 from .stats_screen import StatsScreen 
+from .random_stages_screen import RandomStagesScreen
 from .topics_screen import TopicsScreen
 from .game_screen import GameScreen
 from .result_screen import ResultScreen
@@ -28,6 +29,9 @@ class MainWindow(QMainWindow):
         
         self.current_topic = None
         self.current_level = None
+
+        self.is_random_mode = False
+        self.current_random_stage = None
         
         # --- Global Escape Key Shortcut ---
         self.esc_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Escape), self)
@@ -48,6 +52,7 @@ class MainWindow(QMainWindow):
         self.stats_screen = StatsScreen(self.view_model)
         self.result_screen = ResultScreen(self.view_model)
         self.review_screen = ReviewScreen(self.view_model)
+        self.random_stages_screen = RandomStagesScreen(self.view_model)
 
         # 2. Connect all signals
         self.splash_screen.finished.connect(self._show_welcome_screen)
@@ -59,6 +64,7 @@ class MainWindow(QMainWindow):
         self.categories_screen.settings_requested.connect(self._show_settings_screen)
         self.categories_screen.stats_requested.connect(self._show_stats_screen)
         self.categories_screen.about_requested.connect(self._show_about_screen)
+        self.categories_screen.random_requested.connect(self._show_random_stages_screen)
         
         self.topics_screen.back_requested.connect(self._show_categories_screen)
         self.topics_screen.topic_selected.connect(self._on_topic_selected)
@@ -76,6 +82,9 @@ class MainWindow(QMainWindow):
         
         self.review_screen.back_requested.connect(self._show_result_screen)
 
+        self.random_stages_screen.back_requested.connect(self._show_categories_screen)
+        self.random_stages_screen.stage_selected.connect(self._on_random_stage_selected)
+
         # 3. Add all screens to the stacked widget
         self.stacked_widget.addWidget(self.splash_screen)
         self.stacked_widget.addWidget(self.welcome_screen)
@@ -87,6 +96,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.stats_screen)
         self.stacked_widget.addWidget(self.result_screen)
         self.stacked_widget.addWidget(self.review_screen)
+        self.stacked_widget.addWidget(self.random_stages_screen)
 
         self._show_splash_screen()
 
@@ -110,7 +120,7 @@ class MainWindow(QMainWindow):
             self._show_welcome_screen()
             
         elif hasattr(current_widget, 'back_requested'):
-            # Settings, About, Stats, Review, Result screens all use this signal
+            # Settings, About, Stats, Review, Result, and Random Stages screens all use this signal
             current_widget.back_requested.emit()
 
     # ==========================================
@@ -147,32 +157,57 @@ class MainWindow(QMainWindow):
         self.review_screen.load_mistakes(mistakes)
         self.stacked_widget.setCurrentWidget(self.review_screen)
 
+    def _show_random_stages_screen(self):
+        self.random_stages_screen.load_stages()
+        self.stacked_widget.setCurrentWidget(self.random_stages_screen)
+
     def _on_category_selected(self, category_id: int):
         self.topics_screen.load_topics(category_id)
         self.stacked_widget.setCurrentWidget(self.topics_screen)
         self.view_model.read_text("شاشة المواضيع. اختر الموضوع.", interrupt=True)
 
     def _on_topic_selected(self, topic_id: int, level: int):
+        self.is_random_mode = False
         self.current_topic = topic_id
         self.current_level = level
+        
         self.view_model.start_round(topic_id, level)
         self.stacked_widget.setCurrentWidget(self.game_screen)
         self.view_model.read_text("بدأ التحدي.", interrupt=False)
 
+    def _on_random_stage_selected(self, stage: int):
+        self.is_random_mode = True
+        self.current_random_stage = stage
+        
+        self.view_model.start_random_journey_round(stage)
+        self.stacked_widget.setCurrentWidget(self.game_screen)
+        self.view_model.read_text(f"بدأت المرحلة {stage}.", interrupt=False)
+
     def _on_retry_requested(self):
-        if self.current_topic is not None and self.current_level is not None:
+        # Support retrying for both normal and random modes
+        if self.is_random_mode and self.current_random_stage is not None:
+            self.view_model.start_random_journey_round(self.current_random_stage)
+        elif self.current_topic is not None and self.current_level is not None:
             self.view_model.start_round(self.current_topic, self.current_level)
-            self.stacked_widget.setCurrentWidget(self.game_screen)
-            self.view_model.read_text("تم إعادة التحدي. حظاً موفقاً.", interrupt=False)
+            
+        self.stacked_widget.setCurrentWidget(self.game_screen)
+        self.view_model.read_text("تم إعادة التحدي. حظاً موفقاً.", interrupt=False)
 
     def _on_game_finished(self, stats: dict):
         level_unlocked = False
         if stats["is_win"]:
             self.view_model.audio.play_sound("correct")
-            level_unlocked = self.view_model.settings.unlock_next_level(self.current_topic, self.current_level)
+            # Unlock the proper next level/stage based on the mode
+            if self.is_random_mode:
+                level_unlocked = self.view_model.settings.unlock_next_random_stage(self.current_random_stage)
+            else:
+                level_unlocked = self.view_model.settings.unlock_next_level(self.current_topic, self.current_level)
         else:
             self.view_model.audio.play_sound("wrong")
 
         self.result_screen.display_results(stats, level_unlocked)
         self.stacked_widget.setCurrentWidget(self.result_screen)
-        self.topics_screen._show_levels(self.current_topic, self.topics_screen.title_label.text().replace("موضوع: ", ""))
+        
+        # Only refresh topics screen if we are in normal mode
+        if not self.is_random_mode and self.current_topic is not None:
+            self.topics_screen._show_levels(self.current_topic, self.topics_screen.title_label.text().replace("موضوع: ", ""))

@@ -127,3 +127,54 @@ class DBManager:
             conn.close()
             
         return ("Unknown", "Unknown")
+
+
+    def get_random_mixed_questions(self, limit: int = 10, levels: List[int] = [1]) -> List[Question]:
+        """Fetches random questions from ANY topic, mixed by the provided difficulty levels."""
+        questions = []
+        conn = self._get_connection()
+        if not conn: return questions
+
+        try:
+            cursor = conn.cursor()
+            
+            # 1. Fetch random questions across all topics matching the allowed levels
+            placeholders = ",".join("?" * len(levels))
+            query = f"SELECT * FROM questions WHERE level IN ({placeholders}) ORDER BY RANDOM() LIMIT ?"
+            
+            params = levels + [limit]
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            
+            if not rows:
+                return questions
+
+            # Map questions by ID for fast lookup
+            questions_dict = {}
+            for row in rows:
+                q_obj = Question(**dict(row))
+                questions_dict[q_obj.id] = q_obj
+                questions.append(q_obj)
+
+            # 2. Extract all IDs to fetch answers in ONE single query
+            question_ids = list(questions_dict.keys())
+            ans_placeholders = ",".join("?" * len(question_ids))
+            
+            answers_query = f"SELECT * FROM answers WHERE question_id IN ({ans_placeholders})"
+            cursor.execute(answers_query, question_ids)
+            
+            # Map answers to their questions
+            for row in cursor.fetchall():
+                data = dict(row)
+                data['is_correct'] = bool(data['is_correct'])
+                ans_obj = Answer(**data)
+                
+                if ans_obj.question_id in questions_dict:
+                    questions_dict[ans_obj.question_id].answers.append(ans_obj)
+                    
+        except Exception as e:
+            logger.error(f"Error fetching random mixed questions: {e}")
+        finally:
+            conn.close()
+            
+        return questions
