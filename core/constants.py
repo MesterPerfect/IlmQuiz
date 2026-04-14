@@ -4,7 +4,7 @@ import platform
 import shutil
 
 # 1. Define App Version for CI/CD and Updaters
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 
 # 2. Determine the Base Directory (Read-only for installed apps)
 IS_FROZEN = getattr(sys, 'frozen', False)
