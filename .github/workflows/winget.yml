@@ -1,0 +1,17 @@
+name: Publish to WinGet
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  winget:
+    runs-on: windows-latest
+
+    steps:
+      - name: Run WinGet Releaser
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: MesterPerfect.IlmQuiz
+          token: ${{ secrets.WINGET_TOKEN }}
+          installers-regex: 'IlmQuiz.*\.exe'
