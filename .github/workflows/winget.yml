@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description:
+        required: true
+        default: 'v1.0.2'
 
 jobs:
   winget:
@@ -14,4 +19,5 @@ jobs:
         with:
           identifier: MesterPerfect.IlmQuiz
           token: ${{ secrets.WINGET_TOKEN }}
-          installers-regex: 'IlmQuiz.*\.exe'
+          installers-regex: 'IlmQuiz_Setup_.*\.exe'
+          release-tag: ${{ github.event.inputs.tag_name || github.event.release.tag_name }}
