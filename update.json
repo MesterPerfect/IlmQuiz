@@ -1,22 +1,22 @@
 {
   "stable": {
-    "version": "1.0.1",
+    "version": "1.0.2",
     "release_notes": {
-      "ar": "### الإصدار v1.0.1\n- تم إضافة وضع الإختبارات العشوائي.\n- تم إصلاح بعض الأخطاء.\n- تم إجراء تحسينات على الكود.\n",
-      "en": "Version 1.0.1\n- Added a random test mode.\n- Fixed some bugs.\n- Made improvements to the code.\n"
+      "ar": "🎉 **الإصدار v1.0.2**\n\n- 🎲 إضافة طور 'الرحلة العشوائية' (تحدي 100 مرحلة متدرجة الصعوبة).\n- ⌨️ إضافة اختصارات عالمية (F1 لدليل المساعدة، F2 لسجل المستجدات).\n- 🔤 اعتماد خط 'Cairo' كخط أساسي لتجربة قراءة أجمل.\n- 🔒 تأمين اللعبة لمنع تشغيل أكثر من نسخة في نفس الوقت.\n- 🗣️ تحسينات شاملة على التوافق مع قارئات الشاشة (قراءة الإجابات بشكل متسلسل).\n- 🛍️ إصلاحات برمجية لتتوافق اللعبة بالكامل مع متجر مايكروسوفت.",
+      "en": "🎉 **Version 1.0.2**\n\n- 🎲 Added 'Random Journey' mode featuring 100 scaling difficulty stages.\n- ⌨️ Added global keyboard shortcuts (F1 for Help, F2 for Changelog).\n- 🔤 Integrated 'Cairo' as the default application font.\n- 🔒 Added a single-instance lock to prevent multiple application launches.\n- 🗣️ Enhanced screen reader experience for sequential answer selection.\n- 🛍️ Complete structural compliance for Microsoft Store deployment."
     },
     "downloads": {
       "windows": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.1/IlmQuiz_Setup_v1.0.1.exe",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.1/IlmQuiz_Windows_Portable_v1.0.1.zip"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Setup_v1.0.2.exe",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Windows_Portable_v1.0.2.zip"
       },
       "darwin": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.1/IlmQuiz_macOS_Installer_v1.0.1.dmg",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.1/IlmQuiz_macOS_Portable_v1.0.1.zip"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_macOS_Installer_v1.0.2.dmg",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_macOS_Portable_v1.0.2.zip"
       },
       "linux": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.1/IlmQuiz_Linux_Installer_v1.0.1.deb",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.1/IlmQuiz_Linux_Portable_v1.0.1.tar.gz"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Linux_Installer_v1.0.2.deb",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Linux_Portable_v1.0.2.tar.gz"
       }
     }
   }
