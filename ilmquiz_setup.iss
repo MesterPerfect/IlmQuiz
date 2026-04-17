@@ -1,6 +1,6 @@
-#define MyAppName "IlmQuiz"
-#define MyAppVersion "1.0.1"
-#define AppVersion "1.0.1"
+#define MyAppName "IlmQuiz - تحدي المعرفة الإسلامية"
+#define MyAppVersion "1.0.2"
+#define AppVersion "1.0.2"
 #define MyAppPublisher "MesterPerfect"
 #define MyAppURL "https://github.com/MesterPerfect/IlmQuiz"
 #define MyAppExeName "IlmQuiz.exe"
@@ -10,6 +10,7 @@
 AppName={#MyAppName}
 AppId={{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}
 AppVersion={#AppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
 VersionInfoDescription=IlmQuiz - Islamic Knowledge Challenge
 AppPublisher={#MyAppPublisher}
 VersionInfoVersion={#MyAppVersion}
@@ -21,6 +22,7 @@ VersionInfoOriginalFileName=IlmQuiz_Setup.exe
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
+UninstallDisplayName=IlmQuiz - تحدي المعرفة الإسلامية
 ArchitecturesAllowed=x64compatible arm64
 ArchitecturesInstallIn64BitMode=x64compatible arm64
 ; Ensure you have an icon file in your project directory
