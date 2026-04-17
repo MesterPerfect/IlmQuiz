@@ -2,8 +2,10 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QShortcut, QKeySequence
 
+
 from .splash_screen import SplashScreen
 from .welcome_screen import WelcomeScreen
+from .document_dialog import DocumentDialog
 from .categories_screen import CategoriesScreen
 from .settings_screen import SettingsScreen
 from ui.windows.about_screen import AboutScreen
@@ -36,6 +38,13 @@ class MainWindow(QMainWindow):
         # --- Global Escape Key Shortcut ---
         self.esc_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Escape), self)
         self.esc_shortcut.activated.connect(self._handle_global_escape)
+
+        # --- Help & Changelog Shortcuts ---
+        self.f1_shortcut = QShortcut(QKeySequence(Qt.Key.Key_F1), self)
+        self.f1_shortcut.activated.connect(self._show_help_dialog)
+        
+        self.f2_shortcut = QShortcut(QKeySequence(Qt.Key.Key_F2), self)
+        self.f2_shortcut.activated.connect(self._show_changelog_dialog)
         # ----------------------------------
         
         self._init_screens()
@@ -122,6 +131,30 @@ class MainWindow(QMainWindow):
         elif hasattr(current_widget, 'back_requested'):
             # Settings, About, Stats, Review, Result, and Random Stages screens all use this signal
             current_widget.back_requested.emit()
+
+
+    # ==========================================
+    # Document Dialogs (Help & Changelog)
+    # ==========================================
+    def _show_help_dialog(self):
+        """Opens the Help manual triggered by F1."""
+        dialog = DocumentDialog(
+            title="دليل مساعدة IlmQuiz", 
+            filename="help.md", 
+            view_model=self.view_model, 
+            parent=self
+        )
+        dialog.exec()
+
+    def _show_changelog_dialog(self):
+        """Opens the Release Notes triggered by F2."""
+        dialog = DocumentDialog(
+            title="سجل التحديثات", 
+            filename="changelog.md", 
+            view_model=self.view_model, 
+            parent=self
+        )
+        dialog.exec()
 
     # ==========================================
     # Screen Transitions
