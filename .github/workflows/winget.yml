@@ -3,11 +3,11 @@ name: Publish to WinGet
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   winget:
     runs-on: windows-latest
-
     steps:
       - name: Run WinGet Releaser
         uses: vedantmgoyal9/winget-releaser@v2
