@@ -2,11 +2,12 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                                QLabel, QScrollArea, QHBoxLayout, QStackedWidget)
 from PySide6.QtCore import Qt, Signal
 
-# استدعاء مكون بطاقة المستويات الجديد فقط
+# Import custom components
+from ui.components.topic_item import TopicItemWidget
 from ui.components.level_card import LevelCardWidget
 
 class TopicsScreen(QWidget):
-    """Screen displaying topics natively, followed by a rich level selection view."""
+    """Screen displaying topics with progress tracking, followed by level cards."""
     
     topic_selected = Signal(int, int) 
     back_requested = Signal()
@@ -23,7 +24,7 @@ class TopicsScreen(QWidget):
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.main_layout.setSpacing(20)
 
-        # Header
+        # Header Section
         header_layout = QHBoxLayout()
         self.back_btn = QPushButton("عودة")
         self.back_btn.setObjectName("back_button")
@@ -39,11 +40,10 @@ class TopicsScreen(QWidget):
         header_layout.addWidget(self.title_label, 1)
         self.main_layout.addLayout(header_layout)
 
-        # Internal Stacked Widget
         self.internal_stack = QStackedWidget()
         self.main_layout.addWidget(self.internal_stack)
 
-        # View 1: Topics Scroll Area (Original Layout)
+        # View 1: Topics with Progress Tracking
         self.topics_view = QWidget()
         topics_vbox = QVBoxLayout(self.topics_view)
         
@@ -53,13 +53,13 @@ class TopicsScreen(QWidget):
         
         self.topics_container = QWidget()
         self.topics_layout = QGridLayout(self.topics_container)
-        self.topics_layout.setSpacing(15)
+        self.topics_layout.setSpacing(12)
         
         self.scroll_area.setWidget(self.topics_container)
         topics_vbox.addWidget(self.scroll_area)
         self.internal_stack.addWidget(self.topics_view)
 
-        # View 2: Enhanced Levels View (With Rich Cards)
+        # View 2: Level Selection
         self.levels_view = QWidget()
         self.levels_layout = QVBoxLayout(self.levels_view)
         self.levels_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -78,12 +78,10 @@ class TopicsScreen(QWidget):
         self.internal_stack.addWidget(self.levels_view)
 
     def load_topics(self, category_id: int):
-        """Fetches topics and displays them using standard original buttons."""
         self.current_category_id = category_id
         self.internal_stack.setCurrentWidget(self.topics_view)
         self.title_label.setText("اختر الموضوع")
         
-        # Clear existing topics
         while self.topics_layout.count():
             child = self.topics_layout.takeAt(0)
             if child.widget():
@@ -93,21 +91,21 @@ class TopicsScreen(QWidget):
         
         row, col = 0, 0
         for topic in topics:
-            # استخدام التصميم الأصلي للأزرار بناءً على طلبك
-            btn = QPushButton(topic.name)
-            btn.setObjectName("topic_button")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda checked=False, tid=topic.id, tname=topic.name: self._show_levels(tid, tname))
+            # Fetch real-time progress for each topic
+            unlocked_level = self.view_model.settings.get_unlocked_level(topic.id)
             
-            self.topics_layout.addWidget(btn, row, col)
+            # Create the custom item with progress and icon
+            item = TopicItemWidget(topic.id, topic.name, unlocked_level)
+            item.clicked.connect(self._show_levels)
+            
+            self.topics_layout.addWidget(item, row, col)
             
             col += 1
-            if col > 2:
+            if col > 2: # Grid layout with 3 columns
                 col = 0
                 row += 1
 
     def _show_levels(self, topic_id: int, topic_name: str):
-        """Displays the rich interactive level cards."""
         self.current_topic_id = topic_id
         self.view_model.audio.play_sound("correct")
         self.title_label.setText(f"موضوع: {topic_name}")
@@ -119,17 +117,12 @@ class TopicsScreen(QWidget):
             if child.widget():
                 child.widget().deleteLater()
 
-        levels_data = [
-            (1, "المستوى الأول", "سهل"),
-            (2, "المستوى الثاني", "متوسط"),
-            (3, "المستوى الثالث", "صعب")
-        ]
+        levels_data = [(1, "المستوى الأول", "سهل"), (2, "المستوى الثاني", "متوسط"), (3, "المستوى الثالث", "صعب")]
 
         for lvl_num, title, diff in levels_data:
             is_locked = lvl_num > unlocked_level
             stars = 3 if unlocked_level > lvl_num else 0
             
-            # استدعاء بطاقة المستوى الجديدة
             card = LevelCardWidget(lvl_num, title, diff, is_locked, stars)
             card.level_clicked.connect(self._on_level_selected)
             self.cards_container.addWidget(card)
