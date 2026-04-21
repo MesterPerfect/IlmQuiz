@@ -1,11 +1,14 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton, 
-                               QLabel, QScrollArea, QFrame, QHBoxLayout, QStackedWidget)
+                               QLabel, QScrollArea, QHBoxLayout, QStackedWidget)
 from PySide6.QtCore import Qt, Signal
 
+# استدعاء مكون بطاقة المستويات الجديد فقط
+from ui.components.level_card import LevelCardWidget
+
 class TopicsScreen(QWidget):
-    """Screen displaying topics, followed by a level selection view with unlock logic."""
+    """Screen displaying topics natively, followed by a rich level selection view."""
     
-    topic_selected = Signal(int, int) # Emits (topic_id, level)
+    topic_selected = Signal(int, int) 
     back_requested = Signal()
 
     def __init__(self, view_model):
@@ -20,7 +23,7 @@ class TopicsScreen(QWidget):
         self.main_layout.setContentsMargins(30, 30, 30, 30)
         self.main_layout.setSpacing(20)
 
-        # Header: Back Button and Title
+        # Header
         header_layout = QHBoxLayout()
         self.back_btn = QPushButton("عودة")
         self.back_btn.setObjectName("back_button")
@@ -36,11 +39,11 @@ class TopicsScreen(QWidget):
         header_layout.addWidget(self.title_label, 1)
         self.main_layout.addLayout(header_layout)
 
-        # Internal Stacked Widget for Topics -> Levels
+        # Internal Stacked Widget
         self.internal_stack = QStackedWidget()
         self.main_layout.addWidget(self.internal_stack)
 
-        # View 1: Topics Scroll Area
+        # View 1: Topics Scroll Area (Original Layout)
         self.topics_view = QWidget()
         topics_vbox = QVBoxLayout(self.topics_view)
         
@@ -54,35 +57,28 @@ class TopicsScreen(QWidget):
         
         self.scroll_area.setWidget(self.topics_container)
         topics_vbox.addWidget(self.scroll_area)
-        
         self.internal_stack.addWidget(self.topics_view)
 
-        # View 2: Levels View
+        # View 2: Enhanced Levels View (With Rich Cards)
         self.levels_view = QWidget()
-        levels_layout = QVBoxLayout(self.levels_view)
-        levels_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        levels_layout.setSpacing(30)
+        self.levels_layout = QVBoxLayout(self.levels_view)
+        self.levels_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.levels_layout.setSpacing(25)
         
         self.level_msg_label = QLabel("اختر مستوى الصعوبة")
         self.level_msg_label.setObjectName("level_msg_label")
         self.level_msg_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        levels_layout.addWidget(self.level_msg_label)
+        self.level_msg_label.setStyleSheet("font-size: 22px; color: #FFC107; font-weight: bold;")
+        self.levels_layout.addWidget(self.level_msg_label)
 
-        # Level Buttons
-        self.btn_easy = QPushButton("سهل")
-        self.btn_medium = QPushButton("متوسط (يفتح بعد اجتياز السهل)")
-        self.btn_hard = QPushButton("صعب (يفتح بعد اجتياز المتوسط)")
+        self.cards_container = QVBoxLayout()
+        self.cards_container.setSpacing(15)
+        self.levels_layout.addLayout(self.cards_container)
         
-        for btn, level in [(self.btn_easy, 1), (self.btn_medium, 2), (self.btn_hard, 3)]:
-            btn.setObjectName("level_button")
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda checked=False, l=level: self._on_level_selected(l))
-            levels_layout.addWidget(btn)
-            
         self.internal_stack.addWidget(self.levels_view)
 
     def load_topics(self, category_id: int):
-        """Fetches topics for the given category and populates the grid."""
+        """Fetches topics and displays them using standard original buttons."""
         self.current_category_id = category_id
         self.internal_stack.setCurrentWidget(self.topics_view)
         self.title_label.setText("اختر الموضوع")
@@ -97,6 +93,7 @@ class TopicsScreen(QWidget):
         
         row, col = 0, 0
         for topic in topics:
+            # استخدام التصميم الأصلي للأزرار بناءً على طلبك
             btn = QPushButton(topic.name)
             btn.setObjectName("topic_button")
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -110,21 +107,33 @@ class TopicsScreen(QWidget):
                 row += 1
 
     def _show_levels(self, topic_id: int, topic_name: str):
-        """Switches to the level selection view and applies unlock logic."""
+        """Displays the rich interactive level cards."""
         self.current_topic_id = topic_id
         self.view_model.audio.play_sound("correct")
         self.title_label.setText(f"موضوع: {topic_name}")
         
-        # Check progress from settings manager
         unlocked_level = self.view_model.settings.get_unlocked_level(topic_id)
         
-        self.btn_medium.setEnabled(unlocked_level >= 2)
-        self.btn_hard.setEnabled(unlocked_level >= 3)
-        
-        # Update text based on status
-        self.btn_medium.setText("متوسط" if unlocked_level >= 2 else "متوسط (مغلق)")
-        self.btn_hard.setText("صعب" if unlocked_level >= 3 else "صعب (مغلق)")
-        
+        while self.cards_container.count():
+            child = self.cards_container.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        levels_data = [
+            (1, "المستوى الأول", "سهل"),
+            (2, "المستوى الثاني", "متوسط"),
+            (3, "المستوى الثالث", "صعب")
+        ]
+
+        for lvl_num, title, diff in levels_data:
+            is_locked = lvl_num > unlocked_level
+            stars = 3 if unlocked_level > lvl_num else 0
+            
+            # استدعاء بطاقة المستوى الجديدة
+            card = LevelCardWidget(lvl_num, title, diff, is_locked, stars)
+            card.level_clicked.connect(self._on_level_selected)
+            self.cards_container.addWidget(card)
+
         self.internal_stack.setCurrentWidget(self.levels_view)
         self.view_model.read_text("اختر مستوى الصعوبة", interrupt=True)
 
@@ -133,7 +142,6 @@ class TopicsScreen(QWidget):
         self.topic_selected.emit(self.current_topic_id, level)
 
     def _on_back_clicked(self):
-        """Handles back navigation based on the current internal view."""
         if self.internal_stack.currentWidget() == self.levels_view:
             self.internal_stack.setCurrentWidget(self.topics_view)
             self.title_label.setText("اختر الموضوع")
