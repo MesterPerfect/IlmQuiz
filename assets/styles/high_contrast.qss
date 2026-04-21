@@ -510,3 +510,82 @@ QSlider::handle:horizontal:focus {
     background-color: #FFFF00;
     border-radius: 8px;
 }
+
+/* =========================================
+   Level Card Styles (High Contrast)
+   ========================================= */
+QPushButton#level_card {
+    border-radius: 4px; /* حواف شبه حادة لتباين أعلى */
+    padding: 0px;
+    text-align: left;
+}
+QPushButton#level_card[locked="true"] {
+    background-color: #000000;
+    border: 2px dashed #FFFFFF;
+}
+QPushButton#level_card[locked="false"] {
+    background-color: #000000;
+    border: 2px solid #FFFFFF;
+}
+/* تحديد قوي جداً عند التركيز (Focus) */
+QPushButton#level_card[locked="false"]:hover, 
+QPushButton#level_card[locked="false"]:focus {
+    border: 4px solid #FFFF00; 
+    background-color: #111111;
+}
+
+/* Level Card Internal Labels */
+QLabel#card_title, QLabel#card_difficulty, QLabel#card_star, QLabel#card_lock_msg, QLabel#card_icon {
+    background: transparent;
+    border: none;
+}
+QLabel#card_icon { border-radius: 0px; font-size: 22px; }
+QLabel#card_icon[locked="true"] { background-color: #000000; color: #FFFFFF; border: 2px solid #FFFFFF; }
+QLabel#card_icon[locked="false"] { background-color: #FFFF00; color: #000000; font-size: 24px; font-weight: bold;}
+
+QLabel#card_title { font-size: 22px; font-weight: bold; }
+QLabel#card_title[locked="false"] { color: #FFFFFF; }
+QLabel#card_title[locked="true"] { color: #DDDDDD; }
+
+QLabel#card_difficulty { font-size: 18px; font-weight: bold; }
+QLabel#card_difficulty[locked="true"] { color: #DDDDDD; }
+QLabel#card_difficulty[locked="false"][level="1"] { color: #00FF00; } /* أخضر ساطع */
+QLabel#card_difficulty[locked="false"][level="2"] { color: #FFFF00; } /* أصفر ساطع */
+QLabel#card_difficulty[locked="false"][level="3"] { color: #FF0000; } /* أحمر ساطع */
+
+QLabel#card_star { font-size: 26px; }
+QLabel#card_star[filled="true"] { color: #FFFF00; }
+QLabel#card_star[filled="false"] { color: #888888; }
+
+QLabel#card_lock_msg { font-size: 14px; color: #FF0000; margin-top: 5px; font-weight: bold; }
+
+
+/* =========================================
+   Topic Item Styles (High Contrast)
+   ========================================= */
+QPushButton#topic_item {
+    background-color: #000000;
+    border: 2px solid #FFFFFF;
+    border-radius: 4px;
+    padding: 0px;
+    text-align: left;
+}
+QPushButton#topic_item:hover, 
+QPushButton#topic_item:focus {
+    background-color: #111111;
+    border: 4px solid #FFFF00;
+}
+
+QLabel#topic_item_name, QLabel#topic_item_progress {
+    background: transparent;
+    border: none;
+    font-weight: bold;
+}
+QLabel#topic_item_name { font-size: 18px; color: #FFFFFF; }
+QLabel#topic_item_progress { font-size: 16px; }
+
+/* ألوان تقدم عالية التباين */
+QLabel#topic_item_progress[level="1"] { color: #FFFFFF; } /* 0% */
+QLabel#topic_item_progress[level="2"] { color: #FFFF00; } /* 30% */
+QLabel#topic_item_progress[level="3"] { color: #00FFFF; } /* 66% (سماوي ساطع) */
+QLabel#topic_item_progress[level="4"] { color: #00FF00; } /* 100% (أخضر ساطع) */

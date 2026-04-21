@@ -454,3 +454,81 @@ QSlider::handle:horizontal {
     background-color: #4CAF50;
     border-radius: 8px;
 }
+
+/* =========================================
+   Level Card Styles (LevelCardWidget)
+   ========================================= */
+QPushButton#level_card {
+    border-radius: 12px;
+    padding: 0px;
+    text-align: left;
+}
+QPushButton#level_card[locked="true"] {
+    background-color: #1A1A1A;
+    border: 1px dashed #444444;
+}
+QPushButton#level_card[locked="false"] {
+    background-color: #252528;
+    border: 2px solid #333333;
+}
+QPushButton#level_card[locked="false"]:hover, 
+QPushButton#level_card[locked="false"]:focus {
+    border: 2px solid #4CAF50;
+    background-color: #2A2A2D;
+}
+
+/* Level Card Internal Labels (Transparent Backgrounds) */
+QLabel#card_title, QLabel#card_difficulty, QLabel#card_star, QLabel#card_lock_msg, QLabel#card_icon {
+    background: transparent;
+    border: none;
+}
+QLabel#card_icon { border-radius: 25px; font-size: 22px; }
+QLabel#card_icon[locked="true"] { background-color: #333333; color: #888888; }
+QLabel#card_icon[locked="false"] { background-color: #4CAF50; color: #FFFFFF; font-size: 24px; }
+
+QLabel#card_title { font-size: 20px; font-weight: bold; }
+QLabel#card_title[locked="false"] { color: #FFFFFF; }
+QLabel#card_title[locked="true"] { color: #AAAAAA; }
+
+QLabel#card_difficulty { font-size: 16px; }
+QLabel#card_difficulty[locked="true"] { color: #666666; }
+QLabel#card_difficulty[locked="false"][level="1"] { color: #4CAF50; } /* Easy */
+QLabel#card_difficulty[locked="false"][level="2"] { color: #FF9800; } /* Medium */
+QLabel#card_difficulty[locked="false"][level="3"] { color: #F44336; } /* Hard */
+
+QLabel#card_star { font-size: 24px; }
+QLabel#card_star[filled="true"] { color: #FFD700; }
+QLabel#card_star[filled="false"] { color: #444444; }
+
+QLabel#card_lock_msg { font-size: 13px; color: #F44336; margin-top: 5px; }
+
+
+/* =========================================
+   Topic Item Styles (TopicItemWidget)
+   ========================================= */
+QPushButton#topic_item {
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 0px;
+    text-align: left;
+}
+QPushButton#topic_item:hover, 
+QPushButton#topic_item:focus {
+    background-color: #2A2A2A;
+    border: 2px solid #4CAF50;
+}
+
+QLabel#topic_item_name, QLabel#topic_item_progress {
+    background: transparent;
+    border: none;
+    font-weight: bold;
+}
+QLabel#topic_item_name { font-size: 16px; color: #FFFFFF; }
+QLabel#topic_item_progress { font-size: 14px; }
+
+/* Progress Colors based on level */
+QLabel#topic_item_progress[level="1"] { color: #888888; } /* 0% */
+QLabel#topic_item_progress[level="2"] { color: #FF9800; } /* 30% */
+QLabel#topic_item_progress[level="3"] { color: #2196F3; } /* 66% */
+QLabel#topic_item_progress[level="4"] { color: #4CAF50; } /* 100% */
