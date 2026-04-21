@@ -96,7 +96,7 @@ class TopicsScreen(QWidget):
             
             # Create the custom item with progress and icon
             item = TopicItemWidget(topic.id, topic.name, unlocked_level)
-            item.clicked.connect(self._show_levels)
+            item.clicked_topic.connect(self._show_levels)
             
             self.topics_layout.addWidget(item, row, col)
             
