@@ -589,3 +589,49 @@ QLabel#topic_item_progress[level="1"] { color: #FFFFFF; } /* 0% */
 QLabel#topic_item_progress[level="2"] { color: #FFFF00; } /* 30% */
 QLabel#topic_item_progress[level="3"] { color: #00FFFF; } /* 66% (سماوي ساطع) */
 QLabel#topic_item_progress[level="4"] { color: #00FF00; } /* 100% (أخضر ساطع) */
+
+/* =========================================
+   Welcome Screen Styles (High Contrast)
+   ========================================= */
+QLabel#welcome_title {
+    font-size: 72px;
+    font-weight: bold;
+    color: #00FF00;
+}
+
+QLabel#welcome_subtitle {
+    font-size: 26px;
+    color: #FFFFFF;
+    margin-bottom: 20px;
+}
+
+/* Primary Button */
+QPushButton#start_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border-radius: 4px;
+    font-size: 22px;
+    font-weight: bold;
+    border: 2px solid #FFFFFF;
+}
+QPushButton#start_button:hover, 
+QPushButton#start_button:focus {
+    background-color: #111111;
+    border: 4px solid #FFFF00;
+    color: #FFFF00;
+}
+
+/* Secondary Button */
+QPushButton#exit_button {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 2px solid #FFFFFF;
+    border-radius: 4px;
+    font-size: 20px;
+    font-weight: bold;
+}
+QPushButton#exit_button:hover, 
+QPushButton#exit_button:focus {
+    border: 4px solid #FF0000;
+    color: #FF0000;
+}

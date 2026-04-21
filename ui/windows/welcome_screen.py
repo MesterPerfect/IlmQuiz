@@ -40,13 +40,13 @@ class WelcomeScreen(QWidget):
         self.buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.start_btn = QPushButton("ابدأ التحدي")
-        self.start_btn.setObjectName("action_button")
+        self.start_btn.setObjectName("start_button")
         self.start_btn.setFixedSize(250, 60)
         self.start_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.start_btn.clicked.connect(self._on_start_clicked)
 
         self.exit_btn = QPushButton("خروج")
-        self.exit_btn.setObjectName("action_button")
+        self.exit_btn.setObjectName("exit_button")
         self.exit_btn.setFixedSize(250, 60)
         self.exit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.exit_btn.clicked.connect(self.exit_requested.emit)

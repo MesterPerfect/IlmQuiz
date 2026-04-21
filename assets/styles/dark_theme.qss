@@ -532,3 +532,49 @@ QLabel#topic_item_progress[level="1"] { color: #888888; } /* 0% */
 QLabel#topic_item_progress[level="2"] { color: #FF9800; } /* 30% */
 QLabel#topic_item_progress[level="3"] { color: #2196F3; } /* 66% */
 QLabel#topic_item_progress[level="4"] { color: #4CAF50; } /* 100% */
+
+/* =========================================
+   Welcome Screen Styles (Dark Theme)
+   ========================================= */
+QLabel#welcome_title {
+    font-size: 72px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+QLabel#welcome_subtitle {
+    font-size: 26px;
+    color: #FFFFFF;
+    margin-bottom: 20px;
+}
+
+/* Primary Button */
+QPushButton#start_button {
+    background-color: #4CAF50;
+    color: #FFFFFF;
+    border-radius: 8px;
+    font-size: 22px;
+    font-weight: bold;
+    border: none;
+}
+QPushButton#start_button:hover, 
+QPushButton#start_button:focus {
+    background-color: #45a049;
+    border: 2px solid #FFFFFF;
+}
+
+/* Secondary Button */
+QPushButton#exit_button {
+    background-color: transparent;
+    color: #AAAAAA;
+    border: 2px solid #333333;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+}
+QPushButton#exit_button:hover, 
+QPushButton#exit_button:focus {
+    border-color: #F44336;
+    color: #F44336;
+    background-color: #2A1111;
+}
