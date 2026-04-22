@@ -2,7 +2,6 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QShortcut, QKeySequence
 
-
 from .splash_screen import SplashScreen
 from .welcome_screen import WelcomeScreen
 from .document_dialog import DocumentDialog
@@ -107,31 +106,28 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.review_screen)
         self.stacked_widget.addWidget(self.random_stages_screen)
 
+        # 4. Map Escape key handlers to specific methods for cleaner maintenance
+        self.escape_handlers = {
+            self.game_screen: self.game_screen._on_exit_clicked,
+            self.topics_screen: self.topics_screen._on_back_clicked,
+            self.categories_screen: self._show_welcome_screen,
+            self.welcome_screen: self.close,
+            self.splash_screen: lambda: None # Ignore escape during splash screen
+        }
+
         self._show_splash_screen()
 
     # ==========================================
     # Global Navigation Handler
     # ==========================================
     def _handle_global_escape(self):
-        """Smartly handles the Escape key depending on the currently active screen."""
+        """Smartly handles the Escape key using a dictionary mapping for cleaner maintenance."""
         current_widget = self.stacked_widget.currentWidget()
         
-        if current_widget == self.game_screen:
-            # Game screen has a custom confirmation dialog
-            current_widget._on_exit_clicked()
-            
-        elif current_widget == self.topics_screen:
-            # Topics screen has an internal stack (Levels -> Topics)
-            current_widget._on_back_clicked()
-            
-        elif current_widget == self.categories_screen:
-            # Categories goes back to Welcome screen
-            self._show_welcome_screen()
-            
+        if current_widget in self.escape_handlers:
+            self.escape_handlers[current_widget]()
         elif hasattr(current_widget, 'back_requested'):
-            # Settings, About, Stats, Review, Result, and Random Stages screens all use this signal
             current_widget.back_requested.emit()
-
 
     # ==========================================
     # Document Dialogs (Help & Changelog)
