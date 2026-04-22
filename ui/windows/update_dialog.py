@@ -16,13 +16,15 @@ logger = logging.getLogger(__name__)
 class UpdateDialog(QDialog):
     """
     Dialog to notify the user of an update, display release notes,
-    and handle the downloading process with a progress bar.
+    and handle the downloading process with a progress bar and integrity checks.
     """
-    def __init__(self, new_version: str, release_notes: str, download_url: str, tts_engine, parent=None):
+    # Security Update: Added expected_hash to the constructor
+    def __init__(self, new_version: str, release_notes: str, download_url: str, expected_hash: str, tts_engine, parent=None):
         super().__init__(parent)
         self.new_version = new_version
         self.release_notes = release_notes
         self.download_url = download_url
+        self.expected_hash = expected_hash # Store the hash
         self.tts = tts_engine
         
         self.downloader = None
@@ -110,7 +112,8 @@ class UpdateDialog(QDialog):
         if self.tts:
             self.tts.speak("جاري بدء التحميل. يرجى الانتظار.")
 
-        self.downloader = UpdateDownloader(self.download_url, self.new_version)
+        # Security Update: Pass the expected_hash to the Downloader
+        self.downloader = UpdateDownloader(self.download_url, self.new_version, self.expected_hash)
         self.downloader.progress_updated.connect(self._on_progress_updated)
         self.downloader.download_complete.connect(self._on_download_complete)
         self.downloader.error_occurred.connect(self._on_download_error)

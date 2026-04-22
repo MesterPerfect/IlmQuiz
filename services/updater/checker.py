@@ -2,6 +2,7 @@ import json
 import platform
 import urllib.request
 import logging
+import time
 from core.constants import IS_PORTABLE
 from packaging.version import parse as parse_version
 from PySide6.QtCore import QThread, Signal
@@ -12,9 +13,10 @@ UPDATE_JSON_URL = "https://raw.githubusercontent.com/MesterPerfect/IlmQuiz/maste
 
 class UpdateChecker(QThread):
     """
-    Asynchronously checks a remote JSON manifest for the latest application version.
+    Asynchronously checks a remote JSON manifest for the latest application version and its SHA-256 hash.
     """
-    update_available = Signal(str, str, str) # version, notes, download_url
+    # Security Update: Added a 4th string parameter for the expected_hash
+    update_available = Signal(str, str, str, str) # version, notes, download_url, expected_hash
     no_update = Signal()
     error_occurred = Signal(str)
 
@@ -28,7 +30,6 @@ class UpdateChecker(QThread):
         try:
             logger.info(f"Checking for updates from: {UPDATE_JSON_URL} on channel: {self.update_channel}")
             
-            import time
             # Prevent caching by appending a timestamp query parameter
             url_with_nocache = f"{UPDATE_JSON_URL}?t={int(time.time())}"
             req = urllib.request.Request(url_with_nocache, headers={'User-Agent': 'IlmQuiz-App'})
@@ -52,15 +53,17 @@ class UpdateChecker(QThread):
                 current_os = platform.system().lower() # 'windows', 'darwin', or 'linux'
                 os_downloads = channel_data.get("downloads", {}).get(current_os, {})
                 
-                # Fetch the correct URL based on execution mode
+                # Fetch the correct URL and SHA-256 hash based on execution mode
                 if IS_PORTABLE:
                     download_url = os_downloads.get("portable", "")
+                    expected_hash = os_downloads.get("portable_hash", "")
                 else:
                     download_url = os_downloads.get("installed", "")
+                    expected_hash = os_downloads.get("installed_hash", "")
                     
                 # Emit the signal if a valid URL is found
                 if download_url:
-                    self.update_available.emit(latest_version, localized_notes, download_url)
+                    self.update_available.emit(latest_version, localized_notes, download_url, expected_hash)
                 else:
                     self.error_occurred.emit("لم يتم العثور على ملف تحديث مناسب لنظام التشغيل أو نوع النسخة الخاص بك.")
             else:
