@@ -39,7 +39,13 @@ class TopicItemWidget(QPushButton):
         self.name_label.setObjectName("topic_item_name")
         layout.addWidget(self.name_label, 1)
 
-        percentage = 0 if self.unlocked_level == 1 else (30 if self.unlocked_level == 2 else (66 if self.unlocked_level == 3 else 100))
+        # ==========================================
+        # 🚨 الترقيع: حساب النسبة المئوية رياضياً
+        # ==========================================
+        MAX_LEVELS = 3
+        levels_completed = min(self.unlocked_level - 1, MAX_LEVELS)
+        percentage = int((levels_completed / MAX_LEVELS) * 100)
+
         self.progress_label = QLabel(f"{percentage}%")
         self.progress_label.setObjectName("topic_item_progress")
         self.progress_label.setProperty("level", str(self.unlocked_level))
