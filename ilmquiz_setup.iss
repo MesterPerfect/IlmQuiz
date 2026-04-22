@@ -27,10 +27,16 @@ ArchitecturesAllowed=x64compatible arm64
 ArchitecturesInstallIn64BitMode=x64compatible arm64
 ; Ensure you have an icon file in your project directory
 SetupIconFile=assets\icons\app_icon.ico
-DefaultDirName={code:GetDefaultDirName}
+
+; 🚨 الإصلاح الأهم: توجيه التثبيت للمسار الصحيح بناءً على الصلاحيات
+DefaultDirName={autopf}\{#MyAppName}
+
 DisableProgramGroupPage=yes
 DisableDirPage=no
-PrivilegesRequired=admin
+
+; 🚨 الصلاحيات المنخفضة لضمان التحديث الصامت
+PrivilegesRequired=lowest
+
 OutputDir=build_installer
 OutputBaseFilename=IlmQuiz_Setup_v{#MyAppVersion}
 Compression=lzma
@@ -41,7 +47,6 @@ WizardStyle=modern dark polar
 DisableWelcomePage=no
 MinVersion=0,6.2
 
-; Dynamically prevents uninstaller generation and registry writes in Portable mode
 Uninstallable=IsNormalInstall
 UsedUserAreasWarning=no
 
@@ -55,7 +60,6 @@ arabic.AppLNGfile=Arabic
 english.DeleteSettingsPrompt=Do you want to delete the user data and settings folder?
 arabic.DeleteSettingsPrompt=هل تريد حذف مجلد بيانات المستخدم والإعدادات وقاعدة البيانات؟
 
-; Translations for the custom Installation Mode page
 english.InstallModeTitle=Installation Mode
 arabic.InstallModeTitle=نوع التثبيت
 english.InstallModeDesc=Please select how you want to install {#MyAppName}.
@@ -71,10 +75,8 @@ arabic.InstallModePortable=نسخة محمولة
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Check: IsNormalInstall
 
 [Files]
-; 1. Copy everything to the main app folder first (for both modes)
 Source: "{#BuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-; 2. For NORMAL install: Copy the database to the AppData folder so it can be modified without admin rights
 Source: "{#BuildDir}\assets\database\quiz.db"; DestDir: "{userappdata}\{#MyAppName}\database"; Flags: ignoreversion; Check: IsNormalInstall
 
 [Icons]
@@ -85,7 +87,8 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 RunOnceId: "KillIlmQuiz"; Filename: "taskkill"; Parameters: "/F /IM {#MyAppExeName}"; Flags: runhidden
 
 [UninstallDelete]
-Type: filesandordirs; Name: "{commonpf}\{#MyAppName}"
+; 🚨 الإصلاح الثاني: استخدام {app} لضمان حذف المسار الفعلي الذي اختاره المستخدم
+Type: filesandordirs; Name: "{app}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
@@ -123,7 +126,8 @@ begin
   if IsPortableMode then
     Result := ExpandConstant('{src}\{#MyAppName}_Portable')
   else
-    Result := ExpandConstant('{sd}\program files\{#MyAppName}');
+    // 🚨 توحيد المسار هنا ليتوافق مع autopf
+    Result := ExpandConstant('{autopf}\{#MyAppName}');
 end;
 
 function IsNormalInstall: Boolean;
@@ -170,7 +174,8 @@ var
 begin
   if CurPageID = InstallModePage.ID then
   begin
-    ExpectedNormalDir := ExpandConstant('{sd}\program files\{#MyAppName}');
+    // 🚨 توحيد المسار هنا أيضاً
+    ExpectedNormalDir := ExpandConstant('{autopf}\{#MyAppName}');
     ExpectedPortableDir := ExpandConstant('{src}\{#MyAppName}_Portable');
 
     if (UserProvidedDir = '') and
@@ -203,7 +208,6 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
   begin
-    // If portable mode is selected, generate the .portable file so Python knows!
     if IsPortableInstall then
     begin
       SaveStringToFile(ExpandConstant('{app}\.portable'), 'This file tells IlmQuiz to run in portable mode.', False);
