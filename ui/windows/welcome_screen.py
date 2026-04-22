@@ -85,3 +85,11 @@ class WelcomeScreen(QWidget):
             parent=self
         )
         dialog.exec()
+
+    def hideEvent(self, event):
+        """Called automatically by PySide6 when the widget is hidden."""
+        # Clean up the background thread to prevent "C++ object deleted" crashes
+        if self.checker and self.checker.isRunning():
+            self.checker.quit()
+            self.checker.wait()
+        super().hideEvent(event)
