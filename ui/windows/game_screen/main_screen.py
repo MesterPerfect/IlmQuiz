@@ -20,6 +20,7 @@ class GameScreen(QWidget):
     def __init__(self, view_model):
         super().__init__()
         self.view_model = view_model
+        self._active_timers = [] # Track all timers for safe cleanup
         self._setup_ui()
         self._connect_signals()
 
@@ -85,16 +86,39 @@ class GameScreen(QWidget):
         engine.answer_result.connect(self._on_answer_result)
         engine.game_over.connect(self._on_game_over)
 
-    def _on_radio_toggled(self, checked, button):
-        """Announces selection for screen readers when a radio button is toggled."""
-        if checked:
-            # Combine the text explicitly so the TTS reads them sequentially without overlapping
-            announcement = f"{button.text()}، تَمَّ الِاخْتِيَار"
-            self.view_model.read_text(announcement, interrupt=True)
+    # ==========================================
+    # Safe Timer Management
+    # ==========================================
+    def _start_safe_timer(self, ms: int, callback):
+        """Starts a tracked QTimer that can be safely aborted."""
+        timer = QTimer(self)
+        timer.setSingleShot(True)
+        timer.timeout.connect(callback)
+        timer.start(ms)
+        self._active_timers.append(timer)
+
+    def _cleanup_timers(self):
+        """Stops and clears all pending animations/delays to prevent crashes."""
+        for timer in self._active_timers:
+            if timer.isActive():
+                timer.stop()
+        self._active_timers.clear()
+
+    def hideEvent(self, event):
+        """Automatically called when navigating away from this screen."""
+        self._cleanup_timers()
+        super().hideEvent(event)
 
     # ==========================================
     # Event Handlers
     # ==========================================
+    def _on_radio_toggled(self, checked, button):
+        """Announces selection for screen readers when a radio button is toggled."""
+        if checked:
+            # Combine the text explicitly so the TTS reads them sequentially without overlapping
+            announcement = f"{button.text()}، تَمَّ الِاخْتِيَار"
+            self.view_model.read_text(announcement, interrupt=True)
+
     def _on_question_changed(self, question, current_idx, total):
         self.top_bar.update_counter(current_idx, total)
         self.question_label.setText(question.question)
@@ -119,11 +143,9 @@ class GameScreen(QWidget):
         # Accessibility: Move focus to the question label automatically
         self.question_label.setFocus()
 
-        # Apply smooth fade-in transition using the effects utility
-        # FIX: Allow the layout engine 50ms to recalculate word-wrap geometries 
-        # before applying the opacity effect to prevent QPainter crashes.
-        QTimer.singleShot(50, lambda: apply_fade(self.question_label, start=0.0, end=1.0))
-        QTimer.singleShot(50, lambda: apply_fade(self.answers_frame, start=0.0, end=1.0))
+        # Safely apply smooth fade-in transition
+        self._start_safe_timer(50, lambda: apply_fade(self.question_label, start=0.0, end=1.0))
+        self._start_safe_timer(50, lambda: apply_fade(self.answers_frame, start=0.0, end=1.0))
 
     def _on_helper_clicked(self):
         self.view_model.engine.use_helper()
@@ -169,7 +191,8 @@ class GameScreen(QWidget):
                 rb.setStyleSheet("color: #F44336; text-decoration: line-through; border: 2px solid #F44336;") 
                 apply_shake(rb)
                 
-        QTimer.singleShot(2500, self.view_model.advance_game)
+        # Safely delay moving to the next question
+        self._start_safe_timer(2500, self.view_model.advance_game)
 
     def _on_game_over(self, stats: dict):
         self.game_finished.emit(stats)
@@ -184,6 +207,7 @@ class GameScreen(QWidget):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
+            self._cleanup_timers() # Kill pending animations before exiting
             self.view_model.stop_game()
             self.back_requested.emit()
             self.view_model.audio.play_sound("beep")
