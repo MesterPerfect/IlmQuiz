@@ -1,7 +1,7 @@
 import sys
 import os
 import tempfile
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtCore import Qt, QLockFile
 from PySide6.QtGui import QFontDatabase, QFont
 
@@ -18,19 +18,26 @@ from ui.view_models.game_view_model import GameViewModel
 from ui.windows.main_window import MainWindow
 
 def main():
-    # 1. Prevent multiple instances using a lock file
+    # 1. Initialize QApplication first (Required before creating any UI elements like QMessageBox)
+    app = QApplication(sys.argv)
+    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+
+    # 2. Prevent multiple instances using a lock file
     lock_path = os.path.join(tempfile.gettempdir(), "ilmquiz.lock")
     lock_file = QLockFile(lock_path)
     
     # Try to lock for 100ms, if fails, another instance is running
     if not lock_file.tryLock(100):
         logger.warning("Another instance of IlmQuiz is already running. Exiting.")
+        # Show a warning message to the user instead of silent exit
+        QMessageBox.warning(
+            None,
+            "اللعبة قيد التشغيل",
+            "لعبة IlmQuiz تعمل بالفعل في الخلفية أو في نافذة أخرى.\nلا يمكن تشغيل أكثر من نسخة في نفس الوقت."
+        )
         sys.exit(0)
 
-    app = QApplication(sys.argv)
-    app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-    
-    # 2. Load Cairo Font from assets
+    # 3. Load Cairo Font from assets
     font_path = os.path.join(const.BASE_DIR, "assets", "fonts", "Cairo-Regular.ttf")
     if os.path.exists(font_path):
         font_id = QFontDatabase.addApplicationFont(font_path)
