@@ -178,3 +178,10 @@ class DBManager:
             conn.close()
             
         return questions
+
+    def get_total_topics_count(self) -> int:
+        """Returns the total number of topics efficiently in a single query."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM topics")
+            return cursor.fetchone()[0]

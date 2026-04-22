@@ -154,14 +154,11 @@ class GameViewModel(QObject):
             self.audio.play_sound("wrong")
             self.tts.speak("إجابة خاطئة", interrupt=True)
 
+
     def get_global_stats(self) -> dict:
         """Calculates overall progress across all categories and topics."""
-        categories = self.db.get_all_categories()
-        total_topics = 0
-        
-        for cat in categories:
-            topics = self.db.get_topics_by_category(cat.id)
-            total_topics += len(topics)
+        # جلب إجمالي المواضيع باستعلام واحد سريع جداً بدلاً من الدوران على كل تصنيف
+        total_topics = self.db.get_total_topics_count()
             
         total_levels = total_topics * 3
         completed_levels = 0
@@ -178,6 +175,7 @@ class GameViewModel(QObject):
             "completed_levels": completed_levels,
             "remaining_levels": total_levels - completed_levels
         }
+
 
 
     def start_random_journey_round(self, stage: int):
