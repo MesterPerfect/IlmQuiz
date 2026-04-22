@@ -62,7 +62,7 @@ class SplashScreen(QWidget):
         self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
         
         # Play startup sound (Using 'correct' if 'startup' doesn't exist yet)
-        self.view_model.audio.play_sound("startup") 
+        self.view_model.audio.play_sound("correct") 
         
         self.animation.start()
         
