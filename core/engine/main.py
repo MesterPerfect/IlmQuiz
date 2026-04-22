@@ -4,8 +4,8 @@ from PySide6.QtCore import QObject, Signal, QTimer
 from typing import List
 
 from data.models import Question
-# Removed TIME_PER_QUESTION import, using DEFAULT_TIME_PER_QUESTION as fallback if needed
-from core.constants import DEFAULT_TIME_PER_QUESTION, POINTS_PER_QUESTION, WARNING_TIME, PASSING_SCORE
+# 🚨 التعديل: قمنا بإزالة PASSING_SCORE لأننا سنعتمد على النسبة المئوية
+from core.constants import DEFAULT_TIME_PER_QUESTION, POINTS_PER_QUESTION, WARNING_TIME
 from .state import GameState
 
 logger = logging.getLogger(__name__)
@@ -111,8 +111,18 @@ class GameEngine(QObject):
             self._trigger_game_over()
 
     def _trigger_game_over(self):
-        max_score = len(self.state.questions) * POINTS_PER_QUESTION
-        is_win = (self.state.correct_answers_count >= PASSING_SCORE) and (self.state.lives > 0)
+        total_questions = len(self.state.questions)
+        max_score = total_questions * POINTS_PER_QUESTION
+        
+        # ==========================================
+        # 🚨 الترقيع المنطقي: حساب نسبة النجاح ديناميكياً (80%)
+        # ==========================================
+        # Calculate passing threshold dynamically (80% of actual loaded questions)
+        # Using max(1, ...) ensures at least 1 question must be correct if the topic is very small
+        passing_threshold = max(1, int(total_questions * 0.8))
+        
+        is_win = (self.state.correct_answers_count >= passing_threshold) and (self.state.lives > 0)
+        # ==========================================
 
         avg_time = 0
         if self.state.answered_count > 0:
