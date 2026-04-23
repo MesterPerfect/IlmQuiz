@@ -1,22 +1,22 @@
 {
   "stable": {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "release_notes": {
-      "ar": "🎉 **الإصدار v1.0.2**\n\n- 🎲 إضافة طور 'الرحلة العشوائية' (تحدي 100 مرحلة متدرجة الصعوبة).\n- ⌨️ إضافة اختصارات عالمية (F1 لدليل المساعدة، F2 لسجل المستجدات).\n- 🔤 اعتماد خط 'Cairo' كخط أساسي لتجربة قراءة أجمل.\n- 🔒 تأمين اللعبة لمنع تشغيل أكثر من نسخة في نفس الوقت.\n- 🗣️ تحسينات شاملة على التوافق مع قارئات الشاشة (قراءة الإجابات بشكل متسلسل).\n- 🛍️ إصلاحات برمجية لتتوافق اللعبة بالكامل مع متجر مايكروسوفت.",
-      "en": "🎉 **Version 1.0.2**\n\n- 🎲 Added 'Random Journey' mode featuring 100 scaling difficulty stages.\n- ⌨️ Added global keyboard shortcuts (F1 for Help, F2 for Changelog).\n- 🔤 Integrated 'Cairo' as the default application font.\n- 🔒 Added a single-instance lock to prevent multiple application launches.\n- 🗣️ Enhanced screen reader experience for sequential answer selection.\n- 🛍️ Complete structural compliance for Microsoft Store deployment."
+      "ar": "🚀 **الإصدار v1.0.3 (تحديث الأداء والأمان)**\n\n- 🛡️ ترقيع أمني هام لنظام التحديث التلقائي لحماية اللاعبين.\n- ⚡ تسريع ملحوظ في وقت تشغيل اللعبة بفضل تقنية التحميل الذكي للمراحل.\n- 🎯 إصلاح خطأ 'المستويات المستحيلة': نسبة النجاح الآن تُحسب ديناميكياً (80%) من عدد الأسئلة بدلاً من رقم ثابت.\n- 💬 إضافة رسالة تنبيه واضحة عند محاولة فتح اللعبة أكثر من مرة.\n- 🛠️ القضاء على مشكلة الإغلاق المفاجئ (Crash) عند الخروج السريع من التحدي.\n- 🗄️ تحسينات جذرية في سرعة استرجاع البيانات والإحصائيات من قاعدة البيانات.",
+      "en": "🚀 **Version 1.0.3 (Performance & Security Update)**\n\n- 🛡️ Critical security patch for the auto-updater mechanism.\n- ⚡ Drastically improved app startup time using lazy loading techniques.\n- 🎯 Fixed the 'Impossible Game' bug: Passing threshold is now dynamically calculated at 80%.\n- 💬 Added a user-friendly warning dialog when attempting to launch a duplicate instance.\n- 🛠️ Resolved unexpected crashes caused by rapid screen navigation during gameplay.\n- 🗄️ Optimized database queries to eliminate UI freezing during stats calculation."
     },
     "downloads": {
       "windows": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Setup_v1.0.2.exe",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Windows_Portable_v1.0.2.zip"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Setup_v1.0.3.exe",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Windows_Portable_v1.0.3.zip"
       },
       "darwin": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_macOS_Installer_v1.0.2.dmg",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_macOS_Portable_v1.0.2.zip"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_macOS_Installer_v1.0.3.dmg",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_macOS_Portable_v1.0.3.zip"
       },
       "linux": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Linux_Installer_v1.0.2.deb",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.2/IlmQuiz_Linux_Portable_v1.0.2.tar.gz"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Linux_Installer_v1.0.3.deb",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Linux_Portable_v1.0.3.tar.gz"
       }
     }
   }

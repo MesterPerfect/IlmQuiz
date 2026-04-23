@@ -1,6 +1,6 @@
 #define MyAppName "IlmQuiz - تحدي المعرفة الإسلامية"
-#define MyAppVersion "1.0.2"
-#define AppVersion "1.0.2"
+#define MyAppVersion "1.0.3"
+#define AppVersion "1.0.3"
 #define MyAppPublisher "MesterPerfect"
 #define MyAppURL "https://github.com/MesterPerfect/IlmQuiz"
 #define MyAppExeName "IlmQuiz.exe"
