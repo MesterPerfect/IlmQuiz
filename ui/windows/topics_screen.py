@@ -136,7 +136,25 @@ class TopicsScreen(QWidget):
 
     def _on_back_clicked(self):
         if self.internal_stack.currentWidget() == self.levels_view:
-            self.internal_stack.setCurrentWidget(self.topics_view)
-            self.title_label.setText("اختر الموضوع")
+            # ==========================================
+            # 🚀 Fix: UI State Synchronization
+            # ==========================================
+            # If the user returns after beating a level, the topic progress percentages 
+            # must be dynamically refreshed.
+            if self.current_category_id:
+                # Save scroll position to prevent jarring screen jumps
+                v_scrollbar = self.scroll_area.verticalScrollBar()
+                scroll_pos = v_scrollbar.value() if v_scrollbar else 0
+                
+                # Reload topics (this implicitly switches the stack to topics_view)
+                self.load_topics(self.current_category_id)
+                
+                # Restore scroll state smoothly
+                if v_scrollbar:
+                    v_scrollbar.setValue(scroll_pos)
+            else:
+                # Fallback safeguard
+                self.internal_stack.setCurrentWidget(self.topics_view)
+                self.title_label.setText("اختر الموضوع")
         else:
             self.back_requested.emit()
