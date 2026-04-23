@@ -18,13 +18,12 @@ class UpdateDialog(QDialog):
     Dialog to notify the user of an update, display release notes,
     and handle the downloading process with a progress bar and integrity checks.
     """
-    # Security Update: Added expected_hash to the constructor
     def __init__(self, new_version: str, release_notes: str, download_url: str, expected_hash: str, tts_engine, parent=None):
         super().__init__(parent)
         self.new_version = new_version
         self.release_notes = release_notes
         self.download_url = download_url
-        self.expected_hash = expected_hash # Store the hash
+        self.expected_hash = expected_hash # Store the hash safely
         self.tts = tts_engine
         
         self.downloader = None
@@ -140,9 +139,8 @@ class UpdateDialog(QDialog):
         self._launch_update_file(file_path)
         self.accept()
         
-        # Graceful application shutdown before triggering the OS exit
+        # 🚨 الترقيع: الاعتماد على quit() فقط لإغلاق آمن يحفظ سجلات قاعدة البيانات ويحذف قفل التشغيل
         QApplication.instance().quit()
-        sys.exit(0)
 
     def _on_download_error(self, error_msg: str):
         if self.tts:
@@ -171,8 +169,6 @@ class UpdateDialog(QDialog):
         
         # 1. Handle Inno Setup (.exe) for Windows Installed Mode
         if file_path.lower().endswith('.exe'):
-            # Run the Inno Setup installer silently. 
-            # It will auto-close the current app and restart it.
             args = [
                 file_path,
                 "/VERYSILENT",        # No UI at all
@@ -185,7 +181,6 @@ class UpdateDialog(QDialog):
 
         # 2. Handle Zip/Tar Archives for Portable / Mac / Linux Mode
         if getattr(sys, 'frozen', False):
-            # FIXED: Use global BASE_DIR to ensure proper pathing inside macOS .app bundles
             target_dir = const.BASE_DIR
             main_exe = os.path.basename(sys.executable)
             updater_exe = "apply_update.exe" if sys.platform == "win32" else "apply_update"
