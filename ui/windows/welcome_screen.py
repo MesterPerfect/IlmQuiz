@@ -80,6 +80,7 @@ class WelcomeScreen(QWidget):
             new_version=version,
             release_notes=notes,
             download_url=url,
+            expected_hash=expected_hash,
             tts_engine=self.view_model.tts,
             parent=self
         )
