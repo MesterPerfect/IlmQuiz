@@ -5,6 +5,9 @@ import platform
 import logging
 from PySide6.QtWidgets import QApplication
 
+# Import the robust BASE_DIR from constants
+from core.constants import BASE_DIR
+
 logger = logging.getLogger(__name__)
 
 def trigger_update_installation(downloaded_file_path: str, target_version: str):
@@ -17,10 +20,6 @@ def trigger_update_installation(downloaded_file_path: str, target_version: str):
     app = QApplication.instance()
 
     try:
-        # Determine base directory dynamically based on current file location
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        BASE_DIR = os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
-        
         is_frozen = getattr(sys, 'frozen', False)
         
         if is_frozen:

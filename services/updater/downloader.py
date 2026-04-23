@@ -31,7 +31,6 @@ class UpdateDownloader(QThread):
             logger.info(f"Starting update download from: {self.download_url}")
             req = urllib.request.Request(self.download_url, headers={'User-Agent': 'IlmQuiz-App'})
             
-            # Initialize the SHA-256 hash object
             sha256_hash = hashlib.sha256()
             
             with urllib.request.urlopen(req, timeout=15) as response:
@@ -42,12 +41,7 @@ class UpdateDownloader(QThread):
                 with open(self.download_path, 'wb') as file:
                     while True:
                         if self._is_cancelled:
-                            logger.info("Update download cancelled.")
-                            file.close()
-                            # Clean up the partial file if cancelled
-                            if os.path.exists(self.download_path):
-                                os.remove(self.download_path)
-                            return
+                            break  # Break out of the loop to safely close the file first
                             
                         chunk = response.read(chunk_size)
                         if not chunk:
@@ -61,14 +55,21 @@ class UpdateDownloader(QThread):
                             progress = int((downloaded_size / total_size) * 100)
                             self.progress_updated.emit(progress)
 
+            # Safely handle cancellation cleanup outside the 'with open' block
+            if self._is_cancelled:
+                logger.info("Update download cancelled.")
+                if os.path.exists(self.download_path):
+                    os.remove(self.download_path)
+                return
+
             # ==========================================
-            # 🛡️ Security Check: Hash Verification
+            # Security Check: Hash Verification
             # ==========================================
             if self.expected_hash:
                 actual_hash = sha256_hash.hexdigest()
                 if actual_hash.lower() != self.expected_hash.lower():
                     logger.error(f"Security Alert: Hash mismatch! Expected {self.expected_hash}, got {actual_hash}")
-                    # Immediately delete the compromised or corrupted file
+                    
                     if os.path.exists(self.download_path):
                         os.remove(self.download_path)
                     
