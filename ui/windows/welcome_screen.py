@@ -75,7 +75,7 @@ class WelcomeScreen(QWidget):
         self.checker.update_available.connect(self._show_update_dialog)
         self.checker.start()
 
-    def _show_update_dialog(self, version: str, notes: str, url: str):
+    def _show_update_dialog(self, version: str, notes: str, url: str, expected_hash: str = ""):
         dialog = UpdateDialog(
             new_version=version,
             release_notes=notes,

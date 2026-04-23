@@ -237,9 +237,19 @@ class SettingsScreen(QWidget):
         self.checker.error_occurred.connect(self._on_update_error)
         self.checker.start()
 
-    def _on_update_found(self, version: str, notes: str, url: str):
+    # ==========================================
+    # 🛡️ الترقيع: تمرير البصمة الأمنية (expected_hash)
+    # ==========================================
+    def _on_update_found(self, version: str, notes: str, url: str, expected_hash: str = ""):
         self._reset_update_btn()
-        dialog = UpdateDialog(new_version=version, release_notes=notes, download_url=url, tts_engine=self.view_model.tts, parent=self)
+        dialog = UpdateDialog(
+            new_version=version, 
+            release_notes=notes, 
+            download_url=url, 
+            expected_hash=expected_hash,  # Pass the hash securely
+            tts_engine=self.view_model.tts, 
+            parent=self
+        )
         dialog.exec()
 
     def _on_no_update(self):
@@ -255,3 +265,14 @@ class SettingsScreen(QWidget):
     def _reset_update_btn(self):
         self.check_update_btn.setEnabled(True)
         self.check_update_btn.setText("البحث عن تحديثات الآن")
+
+    # ==========================================
+    # 🧹 الترقيع: تنظيف العمليات عند مغادرة الشاشة
+    # ==========================================
+    def hideEvent(self, event):
+        """Clean up background threads to prevent crashes or popups after leaving the screen."""
+        if self.checker and self.checker.isRunning():
+            self.checker.quit()
+            self.checker.wait()
+            self._reset_update_btn()
+        super().hideEvent(event)
