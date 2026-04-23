@@ -4,13 +4,13 @@ from typing import List, Optional
 @dataclass
 class Answer:
     id: int
-    question_id: str
+    question_id: int  # Fixed: Changed from str to int to match DB schema
     answer: str
     is_correct: bool
 
 @dataclass
 class Question:
-    id: str
+    id: int           # Fixed: Changed from str to int to match DB schema
     topic_id: int
     level: int
     question: str

@@ -179,9 +179,20 @@ class DBManager:
             
         return questions
 
+
     def get_total_topics_count(self) -> int:
         """Returns the total number of topics efficiently in a single query."""
-        with self.get_connection() as conn:
+        conn = self._get_connection()
+        if not conn: 
+            return 0
+            
+        try:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM topics")
-            return cursor.fetchone()[0]
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except sqlite3.Error as e:
+            logger.error(f"Error fetching total topics count: {e}")
+            return 0
+        finally:
+            conn.close()
