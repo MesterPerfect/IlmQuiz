@@ -18,7 +18,7 @@ from ui.view_models.game_view_model import GameViewModel
 from ui.windows.main_window import MainWindow
 
 def main():
-    # 1. Initialize QApplication first (Required before creating any UI elements like QMessageBox)
+    # 1. Initialize QApplication first (Required before creating any UI elements)
     app = QApplication(sys.argv)
     app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
 
@@ -28,13 +28,20 @@ def main():
     
     # Try to lock for 100ms, if fails, another instance is running
     if not lock_file.tryLock(100):
-        logger.warning("Another instance of IlmQuiz is already running. Exiting.")
-        # Show a warning message to the user instead of silent exit
-        QMessageBox.warning(
-            None,
-            "اللعبة قيد التشغيل",
-            "لعبة IlmQuiz تعمل بالفعل في الخلفية أو في نافذة أخرى.\nلا يمكن تشغيل أكثر من نسخة في نفس الوقت."
-        )
+        # Suppress logging exceptions in PyInstaller noconsole/frozen environments
+        try:
+            logger.warning("Another instance of IlmQuiz is already running. Exiting.")
+        except Exception:
+            pass
+        
+        # Explicitly instantiate QMessageBox for compiled environments to guarantee rendering
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Icon.Warning)
+        msg_box.setWindowTitle("اللعبة قيد التشغيل")
+        msg_box.setText("لعبة IlmQuiz تعمل بالفعل في الخلفية أو في نافذة أخرى.\nلا يمكن تشغيل أكثر من نسخة في نفس الوقت.")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.exec()
+        
         sys.exit(0)
 
     # 3. Load Cairo Font from assets
@@ -44,11 +51,11 @@ def main():
         if font_id != -1:
             font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
             app.setFont(QFont(font_family, 11))
-            logger.info(f"Custom font 'Cairo' loaded and set as default.")
+            logger.info("Custom font 'Cairo' loaded and set as default.")
     else:
         logger.warning(f"Font file not found at {font_path}. Using system default.")
 
-    # Initialize Services
+    # 4. Initialize Services
     settings_manager = SettingsManager()
     db_manager = DBManager()
     audio_service = AudioService()
