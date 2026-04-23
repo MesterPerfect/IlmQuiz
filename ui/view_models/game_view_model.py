@@ -165,6 +165,12 @@ class GameViewModel(QObject):
         
         progress = self.settings.data.get("progress", {})
         for topic_id, unlocked_level in progress.items():
+            # ==========================================
+            # 🚀 الترقيع: حماية الإحصائيات من المفاتيح الدخيلة
+            # ==========================================
+            if not str(topic_id).isdigit():
+                continue # Skip "random_stage" and any future non-topic keys
+                
             # If unlocked_level is 2, it means level 1 is completed. Max is 4 (3 levels completed)
             completed = min(unlocked_level - 1, 3)
             completed_levels += completed
@@ -175,8 +181,6 @@ class GameViewModel(QObject):
             "completed_levels": completed_levels,
             "remaining_levels": total_levels - completed_levels
         }
-
-
 
     def start_random_journey_round(self, stage: int):
         """Prepares a mixed 10-question round with dynamic difficulty based on the stage."""
