@@ -3,6 +3,9 @@ import logging
 from PySide6.QtCore import QUrl
 from PySide6.QtMultimedia import QSoundEffect
 
+# Import the safe absolute path from constants
+from core.constants import SOUNDS_DIR
+
 logger = logging.getLogger(__name__)
 
 class AudioService:
@@ -11,7 +14,8 @@ class AudioService:
     Optimized for low latency UI sounds like correct/wrong answers and timer beeps.
     """
     
-    def __init__(self, sounds_dir: str = "assets/sounds"):
+    # Replaced the vulnerable relative path with the robust SOUNDS_DIR constant
+    def __init__(self, sounds_dir: str = SOUNDS_DIR):
         self.sounds_dir = sounds_dir
         self.sounds = {}
         self.muted = False
