@@ -1,5 +1,5 @@
 import os
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QLabel
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QLabel, QTextBrowser
 from PySide6.QtCore import Qt
 import core.constants as const
 
@@ -30,11 +30,18 @@ class DocumentDialog(QDialog):
         self.title_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         layout.addWidget(self.title_label)
 
-        # Text Area (Read Only)
-        self.text_area = QTextEdit()
-        self.text_area.setReadOnly(True)
+        # ==========================================
+        # 🚀 الترقيع: حل مشكلة قراءة الناطق الصوتي للنصوص الطويلة
+        # ==========================================
+        # استخدمنا QTextBrowser بدلاً من QTextEdit لأنه مخصص للقراءة
+        self.text_area = QTextBrowser()
+        self.text_area.setOpenExternalLinks(True) # السماح بفتح الروابط
+        
+        # تفعيل إمكانية تفاعل المؤشر (Caret) مع النص للقراءة بالأسهم
+        self.text_area.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction | Qt.TextInteractionFlag.TextSelectableByKeyboard)
+        
         self.text_area.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.text_area.setAccessibleName(f"محتوى {self.title}")
+        self.text_area.setAccessibleName(f"محتوى {self.title}. استخدم الأسهم للقراءة.")
         self.text_area.setStyleSheet("font-size: 16px; padding: 10px;")
         layout.addWidget(self.text_area)
 

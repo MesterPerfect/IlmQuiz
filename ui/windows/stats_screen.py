@@ -42,6 +42,7 @@ class StatsScreen(QWidget):
         self.main_layout.addWidget(self.stats_frame)
         self.main_layout.addStretch()
 
+
     def refresh_stats(self):
         """Fetches latest stats and updates the UI."""
         # Safely clear existing layout items to prevent memory leaks
@@ -49,6 +50,9 @@ class StatsScreen(QWidget):
             item = self.stats_layout.takeAt(0)
             widget = item.widget()
             if widget:
+                # Remove widget from layout AND delete it properly
+                self.stats_layout.removeWidget(widget)
+                widget.setParent(None)
                 widget.deleteLater()
                 
         stats = self.view_model.get_global_stats()
