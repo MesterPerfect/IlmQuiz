@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
                                QPushButton, QLabel, QScrollArea, QFrame)
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 
 class RandomStagesScreen(QWidget):
     """Screen displaying a 100-stage journey grid for the Random Play mode."""
@@ -50,9 +50,6 @@ class RandomStagesScreen(QWidget):
 
     def load_stages(self):
         """Builds buttons if not loaded, then updates states based on unlocked progress."""
-        # ==========================================
-        # 🚀 الترقيع: التحميل الكسول (Lazy Loading)
-        # ==========================================
         # Only build the 100 buttons the VERY FIRST time this screen is opened
         if not self._is_loaded:
             row, col = 0, 0
@@ -71,7 +68,6 @@ class RandomStagesScreen(QWidget):
                     col = 0
                     row += 1
             self._is_loaded = True
-        # ==========================================
 
         unlocked = self.view_model.settings.get_unlocked_random_stage()
         
@@ -81,12 +77,25 @@ class RandomStagesScreen(QWidget):
                 btn.setEnabled(True)
                 btn.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
                 btn.setText(f"مرحلة\n{stage_num}")
+                # 🚀 ترقيع الوصول: قراءة صحيحة للناطق الصوتي
+                btn.setAccessibleName(f"المرحلة {stage_num}، مفتوحة")
             else:
                 btn.setEnabled(False)
                 btn.setStyleSheet("background-color: #555; color: #888;")
                 btn.setText("🔒")
+                # 🚀 ترقيع الوصول: توضيح أن المرحلة مقفلة بدلاً من قراءة الرمز فقط
+                btn.setAccessibleName(f"المرحلة {stage_num}، مقفلة")
                 
         self.view_model.read_text("شاشة المراحل العشوائية.", interrupt=True)
+
+        # ==========================================
+        # 🚀 الترقيع: التمرير التلقائي (Auto-Scroll)
+        # ==========================================
+        # Scroll down automatically to the latest unlocked stage
+        if 0 < unlocked <= len(self.stage_buttons):
+            target_btn = self.stage_buttons[unlocked - 1]
+            # Use QTimer to allow the layout to render before attempting to scroll
+            QTimer.singleShot(50, lambda: self.scroll_area.ensureWidgetVisible(target_btn, 50, 50))
 
     def _on_stage_clicked(self, stage: int):
         self.view_model.audio.play_sound("correct")
