@@ -16,11 +16,11 @@ class WelcomeScreen(QWidget):
         super().__init__()
         self.view_model = view_model
         self.checker = None
+        self._has_checked_updates = False  # Track if we already checked
         self._setup_ui()
-        self._check_for_updates()
+        # 🚨 الترقيع: تم إزالة _check_for_updates() من هنا لمنع تداخله مع شاشة البداية (Splash)
 
     def _setup_ui(self):
-        # ... (Keep all your existing UI setup code here exactly as it is) ...
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.main_layout.setSpacing(40)
@@ -75,7 +75,6 @@ class WelcomeScreen(QWidget):
         self.checker.update_available.connect(self._show_update_dialog)
         self.checker.start()
 
-
     def _show_update_dialog(self, version: str, notes: str, url: str):
         dialog = UpdateDialog(
             new_version=version,
@@ -85,6 +84,17 @@ class WelcomeScreen(QWidget):
             parent=self
         )
         dialog.exec()
+
+    # ==========================================
+    # 🚀 الترقيع: إدارة أحداث الظهور والاختفاء
+    # ==========================================
+    def showEvent(self, event):
+        """Called automatically when the screen becomes visible to the user."""
+        super().showEvent(event)
+        # Check for updates ONLY when the user actually sees this screen
+        if not self._has_checked_updates:
+            self._check_for_updates()
+            self._has_checked_updates = True
 
     def hideEvent(self, event):
         """Called automatically by PySide6 when the widget is hidden."""
