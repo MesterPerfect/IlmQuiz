@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from ui.utils.effects import apply_shake, apply_glow, clear_effects
-from PySide6.QtCore import QTimer
 
 class TopBarWidget(QWidget):
     """Manages the top bar of the game screen (Timer, Counter, Lives, Exit)."""
@@ -53,7 +52,8 @@ class TopBarWidget(QWidget):
         if lives < 3:
             apply_shake(self.lives_label)
             apply_glow(self.lives_label, "#F44336")
-            QTimer.singleShot(1000, lambda: clear_effects(self.lives_label))
+            # 🚀 الترقيع: تمرير 'self' لربط دورة حياة المؤقت بالواجهة لمنع الانهيار
+            QTimer.singleShot(1000, self, lambda: clear_effects(self.lives_label))
 
 
 class BottomBarWidget(QWidget):

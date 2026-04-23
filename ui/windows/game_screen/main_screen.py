@@ -197,8 +197,17 @@ class GameScreen(QWidget):
     def _on_game_over(self, stats: dict):
         self.game_finished.emit(stats)
 
+
     def _on_exit_clicked(self):
         self.view_model.read_text("هل أنت متأكد أنك تريد الخروج؟", interrupt=True)
+        
+        # ==========================================
+        # 🚀 الترقيع: إيقاف عداد الوقت في الخلفية أثناء ظهور رسالة التأكيد
+        # ==========================================
+        is_timer_running = self.view_model.engine.timer.isActive()
+        if is_timer_running:
+            self.view_model.engine.timer.stop()
+            
         reply = QMessageBox.question(
             self, "تأكيد الخروج", 
             "هل أنت متأكد أنك تريد الخروج من هذا التحدي؟\nستفقد تقدمك في هذا المستوى.",
@@ -211,6 +220,10 @@ class GameScreen(QWidget):
             self.view_model.stop_game()
             self.back_requested.emit()
             self.view_model.audio.play_sound("beep")
+        else:
+            # استئناف عداد الوقت إذا قرر اللاعب البقاء والمتابعة
+            if is_timer_running:
+                self.view_model.engine.timer.start(1000)
 
     def keyPressEvent(self, event):
         key = event.key()
