@@ -93,19 +93,22 @@ class ResultScreen(QWidget):
         total_questions = stats["max_score"] // const.POINTS_PER_QUESTION
         correct = stats["correct_count"]
         
-        # Set Title & Show/Hide Retry Button
+        # Set Title & Retry Button State
+        self.btn_retry.show()
         if stats["is_win"]:
             title_text = "مبروك! لقد نجحت في التحدي"
             if level_unlocked:
                 title_text += "\n(تم فتح مستوى جديد)"
             self.title_label.setStyleSheet("color: #4CAF50;")
-            self.btn_retry.hide() 
-            acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية."
+            self.btn_retry.setText("إعادة التحدي 🔄")
+            self.btn_retry.setAccessibleName("إعادة التحدي لتحسين الوقت والنتيجة")
+            acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية. يمكنك الضغط على إعادة التحدي أو العودة للتصنيفات."
         else:
             title_text = "حظ أوفر في المرة القادمة"
             self.title_label.setStyleSheet("color: #F44336;")
-            self.btn_retry.show() 
-            acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية. يمكنك الضغط على إعادة التحدي للمحاولة مجدداً."
+            self.btn_retry.setText("إعادة المحاولة 🔄")
+            self.btn_retry.setAccessibleName("إعادة المحاولة لتجاوز المستوى")
+            acc_text = f"{title_text}. النتيجة {correct} من {total_questions}. السرعة {stats['avg_time']} ثانية. يمكنك الضغط على إعادة المحاولة للتحدي مجدداً."
             
         self.title_label.setText(title_text)
 
