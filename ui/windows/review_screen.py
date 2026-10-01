@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QLabel, 
-                               QScrollArea, QFrame)
-from PySide6.QtCore import Qt, Signal
+                               QScrollArea, QFrame, QHBoxLayout)
+from PySide6.QtCore import Qt, Signal, QUrl
+from PySide6.QtGui import QDesktopServices
 
 class ReviewScreen(QWidget):
-    """Displays questions answered incorrectly along with the correct answers."""
+    """Displays questions answered incorrectly along with the correct answers and source links."""
     
     back_requested = Signal()
 
@@ -18,7 +19,7 @@ class ReviewScreen(QWidget):
         self.main_layout.setSpacing(20)
 
         # Header
-        self.title_label = QLabel("مراجعة الأخطاء التصحيحية")
+        self.title_label = QLabel("مراجعة الأخطاء التصحيحية والمصادر")
         self.title_label.setObjectName("screen_title")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -44,7 +45,7 @@ class ReviewScreen(QWidget):
         self.main_layout.addWidget(self.btn_back, alignment=Qt.AlignmentFlag.AlignCenter)
 
     def load_mistakes(self, mistakes: list):
-        """Populates the list with mistake cards."""
+        """Populates the list with mistake cards and evidence links."""
         
         # Safely clear existing items, including ghost spacers (QSpacerItems)
         while self.mistakes_layout.count():
@@ -57,6 +58,7 @@ class ReviewScreen(QWidget):
             card = QFrame()
             card.setObjectName("mistake_card")
             card_layout = QVBoxLayout(card)
+            card_layout.setSpacing(10)
             
             q_label = QLabel(f"السؤال {idx + 1}: {question.question}")
             q_label.setObjectName("review_question")
@@ -72,8 +74,28 @@ class ReviewScreen(QWidget):
             
             card_layout.addWidget(q_label)
             card_layout.addWidget(ans_label)
+
+            # Check if source link exists for this question
+            if question.link and question.link.strip():
+                source_btn = QPushButton("📖 عرض الدليل والمصدر الشرعي")
+                source_btn.setObjectName("action_button")
+                source_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                source_btn.setStyleSheet("font-size: 14px; padding: 6px 14px; max-width: 250px; background-color: #2E7D32;")
+                source_btn.setAccessibleName(f"عرض الدليل والمصدر الشرعي للسؤال رقم {idx + 1}")
+                source_url = question.link.strip()
+                source_btn.clicked.connect(lambda checked=False, url=source_url: self._open_source_link(url))
+                
+                btn_row = QHBoxLayout()
+                btn_row.addWidget(source_btn)
+                btn_row.addStretch()
+                card_layout.addLayout(btn_row)
             
             self.mistakes_layout.addWidget(card)
             
         self.mistakes_layout.addStretch()
-        self.view_model.read_text("شاشة مراجعة الأخطاء", interrupt=True)
+        self.view_model.read_text("شاشة مراجعة الأخطاء والمصادر", interrupt=True)
+
+    def _open_source_link(self, url: str):
+        """Opens reference link in user's default browser."""
+        QDesktopServices.openUrl(QUrl(url))
+        self.view_model.read_text("جاري فتح المصدر في المتصفح.", interrupt=True)
