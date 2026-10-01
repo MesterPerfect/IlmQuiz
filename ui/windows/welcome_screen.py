@@ -1,6 +1,5 @@
-import os
 import core.constants as const
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
 from PySide6.QtCore import Qt, Signal
 
 from services.updater import UpdateChecker

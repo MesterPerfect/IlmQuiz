@@ -4,7 +4,6 @@ import platform
 import PySide6
 import json
 import os
-import traceback
 from core.constants import LOG_FILE_PATH, SETTINGS_PATH, IS_PORTABLE, IS_FROZEN
 
 def setup_logging():

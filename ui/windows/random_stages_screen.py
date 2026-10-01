@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
-                               QPushButton, QLabel, QScrollArea, QFrame)
+                               QPushButton, QLabel, QScrollArea)
 from PySide6.QtCore import Qt, Signal, QTimer
 
 class RandomStagesScreen(QWidget):

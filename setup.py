@@ -64,7 +64,13 @@ def main():
         "include_files": include_files,
         "packages": ["core", "data", "services", "ui"], 
         "includes": ["PySide6.QtCore", "PySide6.QtWidgets", "PySide6.QtGui", "PySide6.QtMultimedia", "ssl", "urllib"],
-        "excludes": ["tkinter", "test", "setuptools", "pip", "numpy", "unittest"],
+        "excludes": [
+            "tkinter", "test", "setuptools", "pip", "numpy", "unittest",
+            "PySide6.QtNetwork", "PySide6.QtQml", "PySide6.QtQuick", 
+            "PySide6.QtOpenGL", "PySide6.QtSql", "PySide6.QtSvg", 
+            "PySide6.QtXml", "PySide6.QtTest", "PySide6.QtPrintSupport",
+            "PySide6.QtSensors", "PySide6.QtPositioning", "PySide6.QtBluetooth"
+        ],
     }
 
     # Define icon path
