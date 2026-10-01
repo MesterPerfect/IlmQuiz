@@ -18,12 +18,12 @@ class UpdateDialog(QDialog):
     Dialog to notify the user of an update, display release notes,
     and handle the downloading process with a progress bar and integrity checks.
     """
-    def __init__(self, new_version: str, release_notes: str, download_url: str, expected_hash: str, tts_engine, parent=None):
+    def __init__(self, new_version: str, release_notes: str, download_url: str, expected_hash: str = "", tts_engine=None, parent=None):
         super().__init__(parent)
         self.new_version = new_version
         self.release_notes = release_notes
         self.download_url = download_url
-        self.expected_hash = expected_hash # Store the hash safely
+        self.expected_hash = expected_hash or ""  # Store the hash safely
         self.tts = tts_engine
         
         self.downloader = None

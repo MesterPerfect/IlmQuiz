@@ -1,8 +1,10 @@
+import os
 import sqlite3
 import logging
 from typing import List, Optional, Tuple
 from .models import Category, Topic, Question, Answer
 from core.constants import DB_PATH
+import core.constants as const
 
 logger = logging.getLogger(__name__)
 
@@ -10,10 +12,32 @@ class DBManager:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
 
+    def _resolve_db_path(self) -> str:
+        """Ensures a valid, non-empty database path is resolved."""
+        if os.path.exists(self.db_path) and os.path.getsize(self.db_path) > 0:
+            return self.db_path
+            
+        candidates = [
+            os.path.join(const.BASE_DIR, "assets", "database", "quiz.db"),
+            os.path.join(const.USER_DATA_DIR, "database", "quiz.db"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "database", "quiz.db")
+        ]
+        for path in candidates:
+            if os.path.exists(path) and os.path.getsize(path) > 0:
+                self.db_path = path
+                logger.info(f"Database resolved to fallback path: {path}")
+                return path
+        return self.db_path
+
     def _get_connection(self) -> Optional[sqlite3.Connection]:
         # Connect to the SQLite database and set row factory to access columns by name
+        resolved_path = self._resolve_db_path()
+        if not os.path.exists(resolved_path) or os.path.getsize(resolved_path) == 0:
+            logger.error(f"Database file does not exist or is empty at: {resolved_path}")
+            return None
+
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(resolved_path)
             conn.row_factory = sqlite3.Row
             return conn
         except sqlite3.Error as e:
