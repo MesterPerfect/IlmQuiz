@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                               QLabel, QCheckBox, QSlider, QFrame, QMessageBox, QComboBox)
+                               QLabel, QCheckBox, QSlider, QFrame, QMessageBox, QComboBox, QFileDialog)
 from PySide6.QtCore import Qt, Signal
 
 import core.constants as const
@@ -143,7 +143,23 @@ class SettingsScreen(QWidget):
         self.auto_update_checkbox.stateChanged.connect(self._on_settings_changed)
         settings_layout.addWidget(self.auto_update_checkbox)
 
-        # 8. Manual Update Button
+        # 8. Backup & Restore Progress
+        backup_layout = QHBoxLayout()
+        self.export_btn = QPushButton("💾 تصدير نسخة احتياطية للتقدم")
+        self.export_btn.setObjectName("action_button")
+        self.export_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.export_btn.clicked.connect(self._export_backup)
+
+        self.import_btn = QPushButton("📥 استعادة التقدم من ملف")
+        self.import_btn.setObjectName("action_button")
+        self.import_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.import_btn.clicked.connect(self._import_backup)
+
+        backup_layout.addWidget(self.export_btn)
+        backup_layout.addWidget(self.import_btn)
+        settings_layout.addLayout(backup_layout)
+
+        # 9. Manual Update Button
         self.check_update_btn = QPushButton("البحث عن تحديثات الآن")
         self.check_update_btn.setObjectName("action_button")
         self.check_update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -261,6 +277,43 @@ class SettingsScreen(QWidget):
         self._reset_update_btn()
         self.view_model.read_text("حدث خطأ أثناء البحث عن التحديثات.")
         QMessageBox.warning(self, "خطأ", error_msg)
+
+    def _export_backup(self):
+        """Opens a file dialog to save progress and settings."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "تصدير نسخة احتياطية للتقدم", "ilmquiz_backup.json", "JSON Files (*.json)"
+        )
+        if file_path:
+            success = self.view_model.settings.export_data(file_path)
+            if success:
+                self.view_model.read_text("تم تصدير نسخة التقدم بنجاح.", interrupt=True)
+                QMessageBox.information(self, "نجاح التصدير", "تم حفظ نسخة احتياطية من تقدمك وإعداداتك بنجاح!")
+            else:
+                self.view_model.read_text("فشل تصدير النسخة الاحتياطية.", interrupt=True)
+                QMessageBox.warning(self, "خطأ", "تعذر حفظ النسخة الاحتياطية. يرجى التحقق من مسار الحفظ.")
+
+    def _import_backup(self):
+        """Opens a file dialog to load progress and settings."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "استعادة التقدم من ملف", "", "JSON Files (*.json)"
+        )
+        if file_path:
+            confirm = QMessageBox.question(
+                self, "تأكيد الاستعادة",
+                "استعادة ملف التقدم ستستبدل تقدمك وإعداداتك الحالية بالبيانات الموجودة في الملف.\nهل ترغب بالمتابعة؟",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if confirm == QMessageBox.StandardButton.Yes:
+                success = self.view_model.settings.import_data(file_path)
+                if success:
+                    self._load_current_settings()
+                    self.view_model.apply_theme()
+                    self.view_model.read_text("تمت استعادة التقدم بنجاح.", interrupt=True)
+                    QMessageBox.information(self, "نجاح الاستعادة", "تمت استعادة تقدمك وإعداداتك بنجاح!")
+                else:
+                    self.view_model.read_text("فشل استعادة التقدم.", interrupt=True)
+                    QMessageBox.warning(self, "خطأ", "فشل قراءة ملف النسخة الاحتياطية. تأكد من صحة الملف.")
 
     def _reset_update_btn(self):
         self.check_update_btn.setEnabled(True)
