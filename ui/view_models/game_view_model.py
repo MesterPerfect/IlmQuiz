@@ -205,3 +205,61 @@ class GameViewModel(QObject):
         
         self.engine.load_questions(questions, category_name, topic_name, level=0, time_limit=time_limit)
         self.engine.start_game()
+
+    def get_achievements_status(self) -> list:
+        """Returns all achievements with their locked/unlocked state."""
+        unlocked_ids = set(self.settings.get_achievements())
+        achievements_def = [
+            {"id": "first_win", "title": "بداية النور 🌟", "desc": "الفوز بأول تحدي بنجاح"},
+            {"id": "perfect_score", "title": "الإتقان التام 🎯", "desc": "إنهاء جولة دون أي خطأ"},
+            {"id": "speed_demon", "title": "سريع البديهة ⚡", "desc": "إنهاء جولة بمتوسط سرعة أقل من 10 ثوانٍ"},
+            {"id": "journey_10", "title": "المثابر 🎲", "desc": "الوصول للمرحلة 10 في الرحلة العشوائية"},
+            {"id": "journey_50", "title": "المتفقه 🏆", "desc": "الوصول للمرحلة 50 في الرحلة العشوائية"},
+            {"id": "journey_100", "title": "بطل التحدي 👑", "desc": "إنهاء جميع مراحل الرحلة العشوائية (100 مرحلة)"}
+        ]
+        
+        result = []
+        for item in achievements_def:
+            is_unlocked = item["id"] in unlocked_ids
+            result.append({
+                "id": item["id"],
+                "title": item["title"],
+                "desc": item["desc"],
+                "unlocked": is_unlocked
+            })
+        return result
+
+    def check_and_unlock_achievements(self, stats: dict, is_random_mode: bool, current_stage: int = None) -> list:
+        """Evaluates game results and unlocks qualifying achievements."""
+        newly_unlocked = []
+        if not stats.get("is_win", False):
+            return newly_unlocked
+
+        # 1. First Win
+        if self.settings.unlock_achievement("first_win"):
+            newly_unlocked.append("بداية النور 🌟")
+
+        # 2. Perfect Score
+        if stats.get("wrong_count", 1) == 0:
+            if self.settings.unlock_achievement("perfect_score"):
+                newly_unlocked.append("الإتقان التام 🎯")
+
+        # 3. Speed Demon
+        if 0 < stats.get("avg_time", 999) <= 10:
+            if self.settings.unlock_achievement("speed_demon"):
+                newly_unlocked.append("سريع البديهة ⚡")
+
+        # 4. Random Journey Progress
+        if is_random_mode and current_stage is not None:
+            if current_stage >= 10 and self.settings.unlock_achievement("journey_10"):
+                newly_unlocked.append("المثابر 🎲")
+            if current_stage >= 50 and self.settings.unlock_achievement("journey_50"):
+                newly_unlocked.append("المتفقه 🏆")
+            if current_stage >= 100 and self.settings.unlock_achievement("journey_100"):
+                newly_unlocked.append("بطل التحدي 👑")
+
+        if newly_unlocked:
+            text = f"مبروك! حصلت على وسام جديد: {', '.join(newly_unlocked)}"
+            self.read_text(text, interrupt=False)
+            
+        return newly_unlocked

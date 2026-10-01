@@ -231,6 +231,9 @@ class MainWindow(QMainWindow):
                 level_unlocked = self.view_model.settings.unlock_next_random_stage(self.current_random_stage)
             else:
                 level_unlocked = self.view_model.settings.unlock_next_level(self.current_topic, self.current_level)
+            
+            # Check and award achievements
+            self.view_model.check_and_unlock_achievements(stats, self.is_random_mode, self.current_random_stage)
         else:
             self.view_model.audio.play_sound("wrong")
 
