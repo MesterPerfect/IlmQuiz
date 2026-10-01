@@ -68,7 +68,7 @@ def main():
         
     # 2. التأكد من أن الملف التنفيذي المطلوب تشغيله هو فعلاً الخاص باللعبة
     # (هذا يمنع استخدام أداتك لتشغيل برامج أخرى خبيثة)
-    if args.exe.lower() not in ["ilmquiz.exe", "ilmquiz"]:
+    if args.exe.lower() not in ["ilmquiz.exe", "ilmquiz", "main.py"]:
         print("SECURITY ALERT: Unauthorized executable name.")
         sys.exit(1)
         
@@ -157,10 +157,11 @@ def main():
 
     # 6. Restart the main application
     if os.path.exists(target_exe_path):
+        cmd = [sys.executable, target_exe_path] if target_exe_path.endswith(".py") else [target_exe_path]
         if sys.platform == "win32":
-            subprocess.Popen([target_exe_path], creationflags=subprocess.DETACHED_PROCESS)
+            subprocess.Popen(cmd, creationflags=subprocess.DETACHED_PROCESS)
         else:
-            subprocess.Popen([target_exe_path], start_new_session=True)
+            subprocess.Popen(cmd, start_new_session=True)
 
 if __name__ == "__main__":
     main()
