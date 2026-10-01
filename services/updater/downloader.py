@@ -65,10 +65,11 @@ class UpdateDownloader(QThread):
             # ==========================================
             # Security Check: Hash Verification
             # ==========================================
-            if self.expected_hash:
-                actual_hash = sha256_hash.hexdigest()
-                if actual_hash.lower() != self.expected_hash.lower():
-                    logger.error(f"Security Alert: Hash mismatch! Expected {self.expected_hash}, got {actual_hash}")
+            if self.expected_hash and self.expected_hash.strip():
+                actual_hash = sha256_hash.hexdigest().lower()
+                expected_clean = self.expected_hash.lower().replace("sha256:", "").strip()
+                if actual_hash != expected_clean:
+                    logger.error(f"Security Alert: Hash mismatch! Expected {expected_clean}, got {actual_hash}")
                     
                     if os.path.exists(self.download_path):
                         os.remove(self.download_path)

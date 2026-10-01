@@ -8,21 +8,21 @@
     "downloads": {
       "windows": {
         "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Setup_v1.0.4.exe",
-        "installed_hash": "",
+        "installed_hash": "sha256:53521dddf22fc0f1eab21344ac31bbd85887e2de07fd3e0bece8bd9789c068ce",
         "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Windows_Portable_v1.0.4.zip",
-        "portable_hash": ""
+        "portable_hash": "sha256:1166c63951a2f0629b16024326a3489378b1e4f9d8c9ee5a3bc207bfc5618d97"
       },
       "darwin": {
         "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_macOS_Installer_v1.0.4.dmg",
-        "installed_hash": "",
+        "installed_hash": "sha256:f4613b5d267815e446b9732641bf52678df35b23d1001b8f41985f734c789f8f",
         "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_macOS_Portable_v1.0.4.zip",
-        "portable_hash": ""
+        "portable_hash": "sha256:8c48192dabc16c8a2e3b978541842ffdc79f37537ff271379da2d53226f6ce2a"
       },
       "linux": {
         "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Linux_Installer_v1.0.4.deb",
-        "installed_hash": "",
+        "installed_hash": "sha256:9ca1b64c29e78607227aa5f8a25c7dbdbd16c90bfa61f1b459abeddf55a119cf",
         "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Linux_Portable_v1.0.4.tar.gz",
-        "portable_hash": ""
+        "portable_hash": "sha256:cff5f2218354d55e61191e4ecc165702c2a75b8f86c21add1b8a307cc684a492"
       }
     }
   }
