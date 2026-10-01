@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton, 
-                               QLabel, QScrollArea, QHBoxLayout, QStackedWidget)
+                               QLabel, QScrollArea, QHBoxLayout, QStackedWidget, QLineEdit)
 from PySide6.QtCore import Qt, Signal
 
 # Import custom components
@@ -7,7 +7,7 @@ from ui.components.topic_item import TopicItemWidget
 from ui.components.level_card import LevelCardWidget
 
 class TopicsScreen(QWidget):
-    """Screen displaying topics with progress tracking, followed by level cards."""
+    """Screen displaying topics with real-time search filter and progress tracking."""
     
     topic_selected = Signal(int, int) 
     back_requested = Signal()
@@ -17,6 +17,7 @@ class TopicsScreen(QWidget):
         self.view_model = view_model
         self.current_category_id = None
         self.current_topic_id = None
+        self.all_topic_widgets = []
         self._setup_ui()
 
     def _setup_ui(self):
@@ -43,9 +44,19 @@ class TopicsScreen(QWidget):
         self.internal_stack = QStackedWidget()
         self.main_layout.addWidget(self.internal_stack)
 
-        # View 1: Topics with Progress Tracking
+        # View 1: Topics with Search & Progress Tracking
         self.topics_view = QWidget()
         topics_vbox = QVBoxLayout(self.topics_view)
+        topics_vbox.setSpacing(15)
+
+        # Search Bar
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("🔍 ابحث عن موضوع بالاسم...")
+        self.search_input.setObjectName("search_input")
+        self.search_input.setStyleSheet("font-size: 16px; padding: 10px; border-radius: 8px; border: 1px solid #555; background-color: #222; color: #fff;")
+        self.search_input.setAccessibleName("حقل البحث عن موضوع، اكتب لتصفية المواضيع تلقائياً.")
+        self.search_input.textChanged.connect(self._filter_topics)
+        topics_vbox.addWidget(self.search_input)
         
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
@@ -81,7 +92,11 @@ class TopicsScreen(QWidget):
         self.current_category_id = category_id
         self.internal_stack.setCurrentWidget(self.topics_view)
         self.title_label.setText("اختر الموضوع")
+        self.search_input.blockSignals(True)
+        self.search_input.clear()
+        self.search_input.blockSignals(False)
         
+        self.all_topic_widgets.clear()
         while self.topics_layout.count():
             child = self.topics_layout.takeAt(0)
             if child.widget():
@@ -99,11 +114,32 @@ class TopicsScreen(QWidget):
             item.clicked_topic.connect(self._show_levels)
             
             self.topics_layout.addWidget(item, row, col)
+            self.all_topic_widgets.append((topic.name.lower(), item))
             
             col += 1
             if col > 2: # Grid layout with 3 columns
                 col = 0
                 row += 1
+
+    def _filter_topics(self, query: str):
+        """Filters topics in real-time based on the search query."""
+        query = query.strip().lower()
+        
+        # Remove all widgets from layout first without deleting them
+        while self.topics_layout.count():
+            self.topics_layout.takeAt(0)
+            
+        row, col = 0, 0
+        for topic_name, widget in self.all_topic_widgets:
+            if not query or query in topic_name:
+                widget.show()
+                self.topics_layout.addWidget(widget, row, col)
+                col += 1
+                if col > 2:
+                    col = 0
+                    row += 1
+            else:
+                widget.hide()
 
     def _show_levels(self, topic_id: int, topic_name: str):
         self.current_topic_id = topic_id
