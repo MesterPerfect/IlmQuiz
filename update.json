@@ -1,22 +1,28 @@
 {
   "stable": {
-    "version": "1.0.3",
+    "version": "1.0.4",
     "release_notes": {
-      "ar": "🚀 **الإصدار v1.0.3 (تحديث الأداء والأمان)**\n\n- 🛡️ ترقيع أمني هام لنظام التحديث التلقائي لحماية اللاعبين.\n- ⚡ تسريع ملحوظ في وقت تشغيل اللعبة بفضل تقنية التحميل الذكي للمراحل.\n- 🎯 إصلاح خطأ 'المستويات المستحيلة': نسبة النجاح الآن تُحسب ديناميكياً (80%) من عدد الأسئلة بدلاً من رقم ثابت.\n- 💬 إضافة رسالة تنبيه واضحة عند محاولة فتح اللعبة أكثر من مرة.\n- 🛠️ القضاء على مشكلة الإغلاق المفاجئ (Crash) عند الخروج السريع من التحدي.\n- 🗄️ تحسينات جذرية في سرعة استرجاع البيانات والإحصائيات من قاعدة البيانات.",
-      "en": "🚀 **Version 1.0.3 (Performance & Security Update)**\n\n- 🛡️ Critical security patch for the auto-updater mechanism.\n- ⚡ Drastically improved app startup time using lazy loading techniques.\n- 🎯 Fixed the 'Impossible Game' bug: Passing threshold is now dynamically calculated at 80%.\n- 💬 Added a user-friendly warning dialog when attempting to launch a duplicate instance.\n- 🛠️ Resolved unexpected crashes caused by rapid screen navigation during gameplay.\n- 🗄️ Optimized database queries to eliminate UI freezing during stats calculation."
+      "ar": "🚀 **الإصدار v1.0.4 (التحسينات الشاملة وتجربة المستخدم)**\n\n- 📖 إضافة ميزة عرض مصدر الإجابة والدليل الشرعي في مراجعة الأخطاء.\n- 🔍 إضافة شريط بحث وفلترة سريعة للمواضيع.\n- 💾 إضافة نظام تصدير واستيراد التقدم لحماية بيانات اللاعب.\n- 🔄 إتاحة زر إعادة التحدي دائماً في شاشة النتائج لتحسين السرعة والنتيجة.\n- 🛡️ تحسين أمان واستقرار نظام التحديثات عبر المنصات.\n- 🏆 نظام الأوسمة والإنجازات وتتبع التقدم المتقدم.",
+      "en": "🚀 **Version 1.0.4 (Comprehensive Enhancements & User Experience)**\n\n- 📖 Added reference sources and proof links in mistake review screen.\n- 🔍 Added fast search and filter bar for topics.\n- 💾 Added export and import system for game progress backup.\n- 🔄 Retry challenge button is now always available on the result screen.\n- 🛡️ Enhanced security and cross-platform stability for the auto-updater.\n- 🏆 Added achievement badges and advanced progress tracking."
     },
     "downloads": {
       "windows": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Setup_v1.0.3.exe",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Windows_Portable_v1.0.3.zip"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Setup_v1.0.4.exe",
+        "installed_hash": "",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Windows_Portable_v1.0.4.zip",
+        "portable_hash": ""
       },
       "darwin": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_macOS_Installer_v1.0.3.dmg",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_macOS_Portable_v1.0.3.zip"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_macOS_Installer_v1.0.4.dmg",
+        "installed_hash": "",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_macOS_Portable_v1.0.4.zip",
+        "portable_hash": ""
       },
       "linux": {
-        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Linux_Installer_v1.0.3.deb",
-        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.3/IlmQuiz_Linux_Portable_v1.0.3.tar.gz"
+        "installed": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Linux_Installer_v1.0.4.deb",
+        "installed_hash": "",
+        "portable": "https://github.com/MesterPerfect/IlmQuiz/releases/download/v1.0.4/IlmQuiz_Linux_Portable_v1.0.4.tar.gz",
+        "portable_hash": ""
       }
     }
   }

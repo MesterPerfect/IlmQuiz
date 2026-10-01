@@ -1,6 +1,6 @@
 #define MyAppName "IlmQuiz - تحدي المعرفة الإسلامية"
-#define MyAppVersion "1.0.3"
-#define AppVersion "1.0.3"
+#define MyAppVersion "1.0.4"
+#define AppVersion "1.0.4"
 #define MyAppPublisher "MesterPerfect"
 #define MyAppURL "https://github.com/MesterPerfect/IlmQuiz"
 #define MyAppExeName "IlmQuiz.exe"
@@ -76,8 +76,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#BuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-Source: "{#BuildDir}\assets\database\quiz.db"; DestDir: "{userappdata}\{#MyAppName}\database"; Flags: ignoreversion; Check: IsNormalInstall
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Check: IsNormalInstall
