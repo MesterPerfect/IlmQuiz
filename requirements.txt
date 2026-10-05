@@ -1,2 +1,3 @@
-PySide6
-UniversalSpeech
+PySide6>=6.6.0
+packaging>=23.0
+UniversalSpeech>=2.0.0; sys_platform == 'win32'

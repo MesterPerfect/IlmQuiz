@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "IlmQuiz"
+version = "1.0.4"
+description = "IlmQuiz - Islamic Knowledge Challenge"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = [
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "build_installer",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = [
+    "E501",  # Line too long
+    "E402",  # Module level import not at top of file
+    "E701",  # Multiple statements on one line
+    "E722",  # Do not use bare 'except'
+    "F401",  # Unused imports in __init__ or modules
+    "F841",  # Unused local variable
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = false
+disallow_untyped_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+exclude = [
+    "build/",
+    "dist/",
+    ".venv/",
+    "build_installer/",
+]
