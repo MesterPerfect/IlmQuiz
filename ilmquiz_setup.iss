@@ -140,7 +140,8 @@ end;
 
 procedure DeleteUserDataFolder();
 begin
-  DelTree(ExpandConstant('{userappdata}\{#MyAppName}'), True, True, True);
+  DelTree(ExpandConstant('{userappdata}\tecwindow\{#MyAppName}'), True, True, True);
+  RemoveDir(ExpandConstant('{userappdata}\tecwindow'));
 end;
 
 procedure InitializeWizard;
@@ -217,7 +218,7 @@ procedure DeinitializeUninstall();
 begin
   if MsgBox(
       ExpandConstant('{cm:DeleteSettingsPrompt}') + #13#10 +
-      ExpandConstant('{userappdata}\{#MyAppName}'),
+      ExpandConstant('{userappdata}\tecwindow\{#MyAppName}'),
       mbConfirmation, MB_YESNO) = IDYES then
   begin
     DeleteUserDataFolder();

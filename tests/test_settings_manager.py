@@ -62,5 +62,11 @@ class TestSettingsManager(unittest.TestCase):
         if os.path.exists(new_temp.name):
             os.remove(new_temp.name)
 
+    def test_user_data_path(self):
+        import core.constants as const
+        if not const.IS_PORTABLE:
+            self.assertIn("tecwindow", const.USER_DATA_DIR)
+            self.assertTrue(const.USER_DATA_DIR.endswith("IlmQuiz"))
+
 if __name__ == "__main__":
     unittest.main()
